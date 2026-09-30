@@ -20,7 +20,6 @@ export function apiDocument(options: ApiDocumentOptions): Middleware<RhythmHttpC
     }
     if (!cached) {
       const pending = generate(options.router, options.config, options);
-      // A failed generation must not stick: drop it so the next request retries.
       pending.catch(() => {
         if (cached === pending) cached = undefined;
       });

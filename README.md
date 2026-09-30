@@ -3,10 +3,10 @@
 OpenAPI 3.1 documentation for [Rhythm](https://github.com/rhythmjs/rhythm), the Bun-native backend
 framework. Routes are documented by small single-purpose middlewares (`apiBody`, `apiResponse`, `apiTags`, …); a generator walks the
 router and produces the document; a docs middleware serves it with an interactive reference UI. Each module is
-exported by its own subpath — there is no root barrel export.
+exported by its own subpath; there is no root barrel export.
 
 Schemas are [Standard Schema v1](https://standardschema.dev). Conversion to JSON Schema goes through the
-Standard JSON Schema interface (`~standard.jsonSchema`, spec 1.1) — zod v4.2+ implements it natively, and raw
+Standard JSON Schema interface (`~standard.jsonSchema`, spec 1.1); zod v4.2+ implements it natively, and raw
 JSON Schema objects pass through untouched.
 
 ## Install
@@ -16,7 +16,7 @@ bun add @rhythmjs/openapi @rhythmjs/rhythm @rhythmjs/router
 ```
 
 `@rhythmjs/router` >= 0.0.6 is required (the generator reads `router.entries`). `zod` >= 4.2 is an optional
-peer — only needed when your routes use zod schemas (raw JSON Schema objects work without it).
+peer, only needed when your routes use zod schemas (raw JSON Schema objects work without it).
 
 ## Quick start
 
@@ -75,31 +75,31 @@ const app = new Rhythm<RhythmHttpContext>()
 
 These take a Standard Schema, validate the request at runtime (exposing the typed output on
 `ctx.valid[target]`, same contract and 400 `ValidationFailure` shape as `@rhythmjs/middleware/validate`), and
-document the corresponding OpenAPI object. Use either these or `@rhythmjs/middleware/validate` on a route — not
+document the corresponding OpenAPI object. Use either these or `@rhythmjs/middleware/validate` on a route, not
 both, or the request is validated twice.
 
-- `apiBody(schema, options?)` — Request Body Object. Options: `description`, `required`, `contentType`
+- `apiBody(schema, options?)`: Request Body Object. Options: `description`, `required`, `contentType`
   (drives extraction too: JSON, forms, or raw text), `example(s)`, `encoding`, or a full `content` map.
-- `apiQuery(schema, options?)` — query Parameter Objects, one per schema property; repeated keys become arrays.
-- `apiParam(schema, options?)` — path Parameter Objects (always `required: true`).
-- `apiHeader(schema, options?)` — header Parameter Objects (header names are lowercased).
-- `apiCookie(schema, options?)` — cookie Parameter Objects, parsed from the `cookie` header.
+- `apiQuery(schema, options?)`: query Parameter Objects, one per schema property; repeated keys become arrays.
+- `apiParam(schema, options?)`: path Parameter Objects (always `required: true`).
+- `apiHeader(schema, options?)`: header Parameter Objects (header names are lowercased).
+- `apiCookie(schema, options?)`: cookie Parameter Objects, parsed from the `cookie` header.
 
 Parameter middlewares accept per-property `overrides` for everything a schema cannot express:
 `description`, `required`, `deprecated`, `style`, `explode`, `allowReserved`, `allowEmptyValue`, `example(s)`.
 
 ## Documentation-only middlewares
 
-Runtime no-ops that carry spec fragments. Apply per-route, or router-wide with `router.use(...)` — a
+Runtime no-ops that carry spec fragments. Apply per-route, or router-wide with `router.use(...)`; a
 router-level fragment applies to every route registered after it.
 
 - `apiOperation({ summary, description, operationId, deprecated, externalDocs, servers })`
-- `apiResponse(status, { description, schema?, contentType?, example(s)?, content?, headers?, links? })` —
+- `apiResponse(status, { description, schema?, contentType?, example(s)?, content?, headers?, links? })`:
   stackable; `status` is a code, a range (`"5XX"`), or `"default"`.
 - `apiTags(...names)`
 - `apiSecurity(name, scopes?)` plus presets `apiBearerAuth()`, `apiBasicAuth()`, `apiCookieAuth()`,
   `apiKeyAuth()`, `apiOAuth2(scopes)`, and `apiNoSecurity()` (documents `security: []`).
-- `apiExclude()` — hide a route (or a whole router via `use`).
+- `apiExclude()`: hide a route (or a whole router via `use`).
 - `apiExtension("x-...", value)`
 - `apiCallback(name, callbackObject)`
 
@@ -137,12 +137,12 @@ const doc = await generate(router, config, {
 
 ## Serving the docs
 
-- `apiDocument({ router, config, path? })` — serves the generated JSON (default `/openapi.json`), generated
+- `apiDocument({ router, config, path? })`: serves the generated JSON (default `/openapi.json`), generated
   lazily once and cached.
-- `apiReference({ path?, specUrl?, ui?, title? })` — serves an interactive reference page (default `/docs`,
+- `apiReference({ path?, specUrl?, ui?, title? })`: serves an interactive reference page (default `/docs`,
   Scalar; `ui: "swagger"` for Swagger UI).
 
 ## Not covered
 
 `OPTIONS`/`HEAD`/`TRACE` operations (the router does not route them) and Path Item-level fields (`summary`,
-per-path `servers`) — the `components.pathItems` escape hatch in the config covers the latter.
+per-path `servers`); the `components.pathItems` escape hatch in the config covers the latter.

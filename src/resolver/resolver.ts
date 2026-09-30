@@ -19,8 +19,6 @@ export function resolveSchema(schema: SchemaLike, io: SchemaIO): SchemaObject {
     );
   }
 
-  // libraryOptions is zod's escape hatch for types JSON Schema cannot express (File, Date, ...):
-  // document them as {} rather than throwing. Vendors ignore options they do not know.
   const json = props.jsonSchema[io]({ target: "draft-2020-12", libraryOptions: { unrepresentable: "any" } });
   if ("$schema" in json) {
     const { $schema: _dialect, ...rest } = json;
