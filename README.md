@@ -12,7 +12,7 @@ JSON Schema objects pass through untouched.
 ## Install
 
 ```sh
-pnpm add @rhythmjs/openapi @rhythmjs/rhythm @rhythmjs/router
+bun add @rhythmjs/openapi @rhythmjs/rhythm @rhythmjs/router
 ```
 
 `@rhythmjs/router` >= 0.0.6 is required (the generator reads `router.entries`). `zod` >= 4.2 is an optional

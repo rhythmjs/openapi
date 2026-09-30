@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vite-plus/test";
+import { describe, expect, test } from "bun:test";
 import { z } from "zod";
 import { isStandardSchema, resolveSchema } from "./resolver";
 

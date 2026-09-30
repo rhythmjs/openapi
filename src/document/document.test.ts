@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vite-plus/test";
+import { describe, expect, test } from "bun:test";
 import { defineDocument } from "./document";
 
 describe("defineDocument", () => {
