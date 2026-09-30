@@ -1,7 +1,7 @@
 # @rhythmjs/openapi
 
-OpenAPI 3.1 documentation for [Rhythm](https://github.com/rhythmjs/rhythm) routers and handlers. Routes are
-documented by small single-purpose middlewares (`apiBody`, `apiResponse`, `apiTags`, …); a generator walks the
+OpenAPI 3.1 documentation for [Rhythm](https://github.com/rhythmjs/rhythm), the Bun-native backend
+framework. Routes are documented by small single-purpose middlewares (`apiBody`, `apiResponse`, `apiTags`, …); a generator walks the
 router and produces the document; a docs middleware serves it with an interactive reference UI. Each module is
 exported by its own subpath — there is no root barrel export.
 
@@ -108,8 +108,7 @@ There are no model-level annotations: property documentation lives in the schema
 
 ## Document config and generation
 
-Everything that is not a route concern is a plain config object (Rhythm's counterpart to NestJS's
-`DocumentBuilder`):
+Everything that is not a route concern is a plain config object:
 
 ```ts
 import { defineDocument } from "@rhythmjs/openapi/document";
