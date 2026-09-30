@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/openapi",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "OpenAPI 3.1 documentation middleware (request/response schemas, operations, security, docs UI) for Rhythm routers and handlers.",
   "keywords": [
     "documentation",
