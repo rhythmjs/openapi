@@ -13,11 +13,11 @@ importers:
         version: 1.1.0
     devDependencies:
       '@rhythmjs/rhythm':
-        specifier: ^0.0.6
-        version: 0.0.6
+        specifier: ^0.0.9
+        version: 0.0.9
       '@rhythmjs/router':
-        specifier: ^0.0.6
-        version: 0.0.6
+        specifier: ^0.0.9
+        version: 0.0.9
       '@types/node':
         specifier: ^26.6.3
         version: 26.6.3
@@ -352,12 +352,12 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@rhythmjs/rhythm@0.0.6':
-    resolution: {integrity: sha512-7N0BIOXij43Zzeyb5EYpnwqa05s9dw17RNO1BSjfTgh3OvGimnzATeFO/G4csJ2MHBD01rNZNRX2qmUEaUomEg==}
+  '@rhythmjs/rhythm@0.0.9':
+    resolution: {integrity: sha512-cWAUIIfdj6rPekHvKF91G1OQVUv4jnW69FdVdwZlzSUDuf7ac5ZZUfJTeAg1k81mikMYCEclg+MXxmUEADyJMg==}
     engines: {node: '>=20.19.0'}
 
-  '@rhythmjs/router@0.0.6':
-    resolution: {integrity: sha512-iHQyt3jgZ3MzhhrwUAIKWySydSgOy/+TaEgyn9SCibAXQ/jY4LsXFRu+O4Lqrk6ZBxUhDXcwj2zwvSGShEQvww==}
+  '@rhythmjs/router@0.0.9':
+    resolution: {integrity: sha512-Ag0vs0HTeEHfH635Fh9WwrLfzY5/HFNyXRsa+lV7ODXfJuw5YNePVPO/ccMCTxTxKYkBIajQsGB6EQ/wg2luvQ==}
     engines: {node: '>=20.19.0'}
 
   '@standard-schema/spec@1.1.0':
@@ -1021,6 +1021,11 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
+  srvx@1.0.5:
+    resolution: {integrity: sha512-KvSKRpgPG/oaq3cyT614OQ2bAa7DynuGamivCZeoZzIUULOdbQz6wUtnnVuC4+DCx2Zglzo8v5gBYmWIWYhDxA==}
+    engines: {node: '>=20.16.0'}
+    hasBin: true
+
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
 
@@ -1313,11 +1318,12 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@rhythmjs/rhythm@0.0.6': {}
+  '@rhythmjs/rhythm@0.0.9': {}
 
-  '@rhythmjs/router@0.0.6':
+  '@rhythmjs/router@0.0.9':
     dependencies:
-      '@rhythmjs/rhythm': 0.0.6
+      '@rhythmjs/rhythm': 0.0.9
+      srvx: 1.0.5
 
   '@standard-schema/spec@1.1.0': {}
 
@@ -1793,6 +1799,8 @@ snapshots:
       totalist: 3.0.1
 
   source-map-js@1.2.1: {}
+
+  srvx@1.0.5: {}
 
   stackback@0.0.2: {}
 
