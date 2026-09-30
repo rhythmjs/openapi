@@ -36,8 +36,8 @@ function serializeIssues(issues: readonly StandardSchemaV1.Issue[]): ValidationI
   });
 }
 
-function collectMultiValue(pairs: Iterable<[string, string]>): Record<string, string | string[]> {
-  const out: Record<string, string | string[]> = {};
+function collectMultiValue<T>(pairs: Iterable<[string, T]>): Record<string, T | T[]> {
+  const out: Record<string, T | T[]> = {};
   for (const [key, value] of pairs) {
     const existing = out[key];
     if (existing === undefined) out[key] = value;
@@ -81,23 +81,6 @@ export type ExtractResult = { ok: true; value: unknown } | { ok: false; message:
 
 export type Extractor = (ctx: ValidationContext) => ExtractResult | Promise<ExtractResult>;
 
-function parseMultipart(body: string, contentTypeHeader: string): Record<string, string | string[]> | undefined {
-  const boundary = /boundary="?([^";]+)"?/i.exec(contentTypeHeader)?.[1];
-  if (!boundary) return undefined;
-  const pairs: [string, string][] = [];
-  for (const part of body.split(`--${boundary}`)) {
-    const headerEnd = part.indexOf("\r\n\r\n");
-    if (headerEnd === -1) continue;
-    const headers = part.slice(0, headerEnd);
-    const name = /content-disposition:[^\r\n]*\sname="([^"]*)"/i.exec(headers)?.[1];
-    if (name === undefined) continue;
-    const filename = /\sfilename="([^"]*)"/i.exec(headers)?.[1];
-    const value = filename ?? part.slice(headerEnd + 4).replace(/\r\n$/, "");
-    pairs.push([name, value]);
-  }
-  return collectMultiValue(pairs);
-}
-
 export function bodyExtractor(contentType: string): Extractor {
   return async (ctx) => {
     if (contentType.includes("json")) {
@@ -105,6 +88,13 @@ export function bodyExtractor(contentType: string): Extractor {
         return { ok: true, value: await ctx.request.clone().json() };
       } catch {
         return { ok: false, message: "Malformed JSON in request body" };
+      }
+    }
+    if (contentType.includes("form-data")) {
+      try {
+        return { ok: true, value: collectMultiValue<string | File>(await ctx.request.clone().formData()) };
+      } catch {
+        return { ok: false, message: "Malformed form data in request body" };
       }
     }
     let text: string;
@@ -115,10 +105,6 @@ export function bodyExtractor(contentType: string): Extractor {
     }
     if (contentType.includes("x-www-form-urlencoded")) {
       return { ok: true, value: collectMultiValue(new URLSearchParams(text)) };
-    }
-    if (contentType.includes("form-data")) {
-      const value = parseMultipart(text, ctx.request.headers.get("content-type") ?? contentType);
-      return value ? { ok: true, value } : { ok: false, message: "Malformed form data in request body" };
     }
     return { ok: true, value: text };
   };

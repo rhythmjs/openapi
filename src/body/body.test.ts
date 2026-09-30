@@ -67,23 +67,43 @@ describe("apiBody", () => {
     expect(await res.json()).toEqual({ user: "ada" });
   });
 
-  test("extracts multipart forms, using the filename for file parts", async () => {
+  test("extracts multipart forms with string fields and real File parts", async () => {
     const router = new RhythmRouter().post(
       "/upload",
-      apiBody(z.object({ user: z.string(), avatar: z.string() }), { contentType: "multipart/form-data" }),
-      (ctx) => {
-        ctx.json(ctx.valid.body);
+      apiBody(z.object({ user: z.string(), avatar: z.instanceof(File) }), { contentType: "multipart/form-data" }),
+      async (ctx) => {
+        const { user, avatar } = ctx.valid.body;
+        ctx.json({ user, name: avatar.name, type: avatar.type, content: await avatar.text() });
       },
     );
 
     const form = new FormData();
     form.append("user", "ada");
-    form.append("avatar", new File(["binary"], "avatar.png", { type: "image/png" }));
+    form.append("avatar", new File(["file content"], "avatar.png", { type: "image/png" }));
 
     const res = await serve(router)(new Request("http://localhost/upload", { method: "POST", body: form }));
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ user: "ada", avatar: "avatar.png" });
+    expect(await res.json()).toEqual({ user: "ada", name: "avatar.png", type: "image/png", content: "file content" });
+  });
+
+  test("preserves binary file contents byte for byte", async () => {
+    const router = new RhythmRouter().post(
+      "/upload",
+      apiBody(z.object({ file: z.instanceof(File) }), { contentType: "multipart/form-data" }),
+      async (ctx) => {
+        const bytes = new Uint8Array(await ctx.valid.body.file.arrayBuffer());
+        ctx.json({ bytes: [...bytes] });
+      },
+    );
+
+    const form = new FormData();
+    form.append("file", new File([new Uint8Array([0, 255, 128, 1])], "raw.bin", { type: "application/octet-stream" }));
+
+    const res = await serve(router)(new Request("http://localhost/upload", { method: "POST", body: form }));
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ bytes: [0, 255, 128, 1] });
   });
 
   test("rejects a multipart body without a boundary with 400", async () => {
