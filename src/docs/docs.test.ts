@@ -3,6 +3,7 @@ import { Rhythm } from "@rhythmjs/rhythm";
 import { RhythmRouter } from "@rhythmjs/router";
 import { toFetchHandler } from "@rhythmjs/router/fetch";
 import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import { apiBody } from "../body/body";
 import { apiResponse } from "../response/response";
 import { defineDocument } from "../document/document";
 import { apiDocument, apiReference } from "./docs";
@@ -25,7 +26,7 @@ describe("apiDocument", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("application/json");
     const doc = (await res.json()) as { openapi: string; paths: Record<string, unknown> };
-    expect(doc.openapi).toBe("3.1.1");
+    expect(doc.openapi).toBe("3.1.2");
     expect(Object.keys(doc.paths)).toEqual(["/hello"]);
   });
 
@@ -39,6 +40,37 @@ describe("apiDocument", () => {
     const res = await app()(new Request("http://localhost/openapi.json", { method: "POST" }));
 
     expect(await res.text()).not.toContain('"openapi"');
+  });
+
+  test("a failed generation is not cached: the next request retries", async () => {
+    let calls = 0;
+    const flaky = {
+      "~standard": {
+        version: 1,
+        vendor: "zod",
+        validate: (value: unknown) => ({ value }),
+        jsonSchema: {
+          input: (): Record<string, unknown> => {
+            calls += 1;
+            if (calls === 1) throw new Error("boom");
+            return { type: "string" };
+          },
+          output: (): Record<string, unknown> => ({ type: "string" }),
+        },
+      },
+    } as never;
+    const router = new RhythmRouter().post("/flaky", apiBody(flaky), (ctx) => {
+      ctx.json({ ok: true });
+    });
+    const middleware = apiDocument({ router, config });
+    let body: unknown;
+    const ctx = { request: new Request("http://localhost/openapi.json"), json: (data: unknown) => (body = data) };
+    const next = async (): Promise<never> => ctx as never;
+
+    await expect(middleware(ctx as never, next)).rejects.toThrow("boom");
+    await middleware(ctx as never, next);
+
+    expect((body as { paths: Record<string, unknown> }).paths).toHaveProperty("/flaky");
   });
 });
 

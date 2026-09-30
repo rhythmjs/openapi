@@ -5,8 +5,9 @@ documented by small single-purpose middlewares (`apiBody`, `apiResponse`, `apiTa
 router and produces the document; a docs middleware serves it with an interactive reference UI. Each module is
 exported by its own subpath — there is no root barrel export.
 
-Schemas are [Standard Schema v1](https://standardschema.dev): zod and valibot convert to JSON Schema out of the
-box, any other vendor via a custom converter.
+Schemas are [Standard Schema v1](https://standardschema.dev). Conversion to JSON Schema goes through the
+Standard JSON Schema interface (`~standard.jsonSchema`, spec 1.1) — zod v4.2+ implements it natively, and raw
+JSON Schema objects pass through untouched.
 
 ## Install
 
@@ -14,8 +15,8 @@ box, any other vendor via a custom converter.
 pnpm add @rhythmjs/openapi @rhythmjs/rhythm @rhythmjs/router
 ```
 
-`@rhythmjs/router` >= 0.0.6 is required (the generator reads `router.entries`). `zod` (v4) and
-`@valibot/to-json-schema` are optional peers — install whichever your schemas need.
+`@rhythmjs/router` >= 0.0.6 is required (the generator reads `router.entries`). `zod` >= 4.2 is an optional
+peer — only needed when your routes use zod schemas (raw JSON Schema objects work without it).
 
 ## Quick start
 
@@ -103,7 +104,7 @@ router-level fragment applies to every route registered after it.
 - `apiCallback(name, callbackObject)`
 
 There are no model-level annotations: property documentation lives in the schema itself (zod `.describe()` /
-`.meta()`, valibot equivalents) and flows through the JSON Schema conversion.
+`.meta()`) and flows through the JSON Schema conversion.
 
 ## Document config and generation
 
@@ -126,8 +127,7 @@ const config = defineDocument({
 });
 
 const doc = await generate(router, config, {
-  // openapi: "3.1.1", includeUndocumented: true,
-  // converters: { arktype: (schema) => schema.toJsonSchema() },
+  // openapi: "3.1.2", includeUndocumented: true,
 });
 ```
 

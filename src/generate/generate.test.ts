@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 import { RhythmRouter } from "@rhythmjs/router";
 import { z } from "zod";
-import * as v from "valibot";
 import { apiBody } from "../body/body";
 import { apiQuery } from "../query/query";
 import { apiParam } from "../param/param";
@@ -55,7 +54,7 @@ describe("generate", () => {
 
     const doc = await generate(router, config);
 
-    expect(doc.openapi).toBe("3.1.1");
+    expect(doc.openapi).toBe("3.1.2");
     expect(doc.info).toEqual({ title: "Test API", version: "1.0.0" });
     expect(doc.components?.securitySchemes).toEqual({ bearer: { type: "http", scheme: "bearer" } });
 
@@ -135,6 +134,15 @@ describe("generate", () => {
     expect(op(doc, "/login", "get").security).toEqual([]);
   });
 
+  test("route-level security re-adds requirements after an inherited apiNoSecurity", async () => {
+    const router = new RhythmRouter().use(apiNoSecurity()).get("/open", ok).get("/locked", apiBearerAuth(), ok);
+
+    const doc = await generate(router, config);
+
+    expect(op(doc, "/open", "get").security).toEqual([]);
+    expect(op(doc, "/locked", "get").security).toEqual([{ bearer: [] }]);
+  });
+
   test("operation extensions land on the operation object", async () => {
     const router = new RhythmRouter().get("/x", apiExtension("x-internal", true), ok);
 
@@ -166,16 +174,26 @@ describe("generate", () => {
     expect(response.content["application/json"].schema.properties.user.$ref).toBe("#/components/schemas/User");
   });
 
-  test("valibot schemas document alongside zod schemas", async () => {
-    const router = new RhythmRouter().post("/valibot", apiBody(v.object({ email: v.pipe(v.string(), v.email()) })), ok);
+  test("request and response sides of a transforming schema document differently", async () => {
+    const Count = z.object({ count: z.string().transform(Number).pipe(z.number()) });
+    const router = new RhythmRouter().post(
+      "/count",
+      apiBody(Count),
+      apiResponse(200, { description: "Counted", schema: Count }),
+      ok,
+    );
 
     const doc = await generate(router, config);
-    const body = op(doc, "/valibot", "post").requestBody as {
-      content: Record<string, { schema: { type: string; required: string[] } }>;
+    const operation = op(doc, "/count", "post");
+    const request = operation.requestBody as {
+      content: Record<string, { schema: { properties: Record<string, { type: string }> } }>;
+    };
+    const response = operation.responses?.["200"] as unknown as {
+      content: Record<string, { schema: { properties: Record<string, { type: string }> } }>;
     };
 
-    expect(body.content["application/json"].schema.type).toBe("object");
-    expect(body.content["application/json"].schema.required).toEqual(["email"]);
+    expect(request.content["application/json"].schema.properties.count.type).toBe("string");
+    expect(response.content["application/json"].schema.properties.count.type).toBe("number");
   });
 
   test("wildcard segments become a {wildcard} template parameter path", async () => {

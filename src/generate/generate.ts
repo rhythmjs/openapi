@@ -24,7 +24,7 @@ import {
   type ResponseSpec,
   type SchemaLike,
 } from "../metadata/metadata";
-import { resolveSchema, type ResolverOptions, type SchemaIO } from "../resolver/resolver";
+import { resolveSchema, type SchemaIO } from "../resolver/resolver";
 import type { OpenAPIConfig } from "../document/document";
 
 export interface RouterSource {
@@ -34,7 +34,7 @@ export interface RouterSource {
   >;
 }
 
-export interface GenerateOptions extends ResolverOptions {
+export interface GenerateOptions {
   openapi?: string;
   includeUndocumented?: boolean;
 }
@@ -89,32 +89,32 @@ function toOpenAPIPath(path: string): string {
     .join("/");
 }
 
-type Resolve = (schema: SchemaLike, io: SchemaIO) => Promise<SchemaObject>;
+type Resolve = (schema: SchemaLike, io: SchemaIO) => SchemaObject;
 
-async function toMediaType(spec: MediaTypeSpec, io: SchemaIO, resolve: Resolve): Promise<MediaTypeObject> {
+function toMediaType(spec: MediaTypeSpec, io: SchemaIO, resolve: Resolve): MediaTypeObject {
   const { schema, ...rest } = spec;
-  return { ...rest, ...(schema !== undefined ? { schema: await resolve(schema, io) } : {}) };
+  return { ...rest, ...(schema !== undefined ? { schema: resolve(schema, io) } : {}) };
 }
 
-async function toContent(
+function toContent(
   content: Record<string, MediaTypeSpec>,
   io: SchemaIO,
   resolve: Resolve,
-): Promise<Record<string, MediaTypeObject>> {
+): Record<string, MediaTypeObject> {
   const out: Record<string, MediaTypeObject> = {};
-  for (const [mediaType, spec] of Object.entries(content)) out[mediaType] = await toMediaType(spec, io, resolve);
+  for (const [mediaType, spec] of Object.entries(content)) out[mediaType] = toMediaType(spec, io, resolve);
   return out;
 }
 
-async function toRequestBody(spec: RequestBodySpec, resolve: Resolve): Promise<RequestBodyObject> {
+function toRequestBody(spec: RequestBodySpec, resolve: Resolve): RequestBodyObject {
   const { content, ...rest } = spec;
-  return { ...rest, content: await toContent(content, "input", resolve) };
+  return { ...rest, content: toContent(content, "input", resolve) };
 }
 
-async function toResponse(spec: ResponseSpec, resolve: Resolve): Promise<ResponseObject> {
+function toResponse(spec: ResponseSpec, resolve: Resolve): ResponseObject {
   const { content, headers, ...rest } = spec;
   const out: ResponseObject = { ...rest };
-  if (content) out.content = await toContent(content, "output", resolve);
+  if (content) out.content = toContent(content, "output", resolve);
   if (headers) {
     const converted: Record<string, HeaderObject | ReferenceObject> = {};
     for (const [name, header] of Object.entries(headers)) {
@@ -124,7 +124,7 @@ async function toResponse(spec: ResponseSpec, resolve: Resolve): Promise<Respons
         const { schema, ...headerRest } = header as HeaderSpec;
         converted[name] = {
           ...headerRest,
-          ...(schema !== undefined ? { schema: await resolve(schema, "output") } : {}),
+          ...(schema !== undefined ? { schema: resolve(schema, "output") } : {}),
         };
       }
     }
@@ -133,12 +133,8 @@ async function toResponse(spec: ResponseSpec, resolve: Resolve): Promise<Respons
   return out;
 }
 
-async function expandParameters(
-  group: ParameterGroupSpec,
-  sink: Map<string, ParameterObject>,
-  resolve: Resolve,
-): Promise<void> {
-  const resolved = await resolve(group.schema, "input");
+function expandParameters(group: ParameterGroupSpec, sink: Map<string, ParameterObject>, resolve: Resolve): void {
+  const resolved = resolve(group.schema, "input");
   if (typeof resolved !== "object" || resolved === null) return;
   const properties = (resolved.properties ?? {}) as Record<string, SchemaObject>;
   const required = Array.isArray(resolved.required) ? (resolved.required as string[]) : [];
@@ -157,10 +153,7 @@ async function expandParameters(
   }
 }
 
-async function buildOperation(
-  fragments: readonly OperationFragment[],
-  resolve: Resolve,
-): Promise<OperationObject | undefined> {
+function buildOperation(fragments: readonly OperationFragment[], resolve: Resolve): OperationObject | undefined {
   const tags: string[] = [];
   const security: SecurityRequirementObject[] = [];
   let noSecurity = false;
@@ -179,17 +172,19 @@ async function buildOperation(
     }
     if (fragment.security === "none") {
       noSecurity = true;
-    } else {
-      for (const requirement of fragment.security ?? []) {
+      security.length = 0;
+    } else if (fragment.security) {
+      noSecurity = false;
+      for (const requirement of fragment.security) {
         if (!security.some((existing) => JSON.stringify(existing) === JSON.stringify(requirement))) {
           security.push(requirement);
         }
       }
     }
-    for (const group of fragment.parameters ?? []) await expandParameters(group, parameters, resolve);
-    if (fragment.requestBody) requestBody = await toRequestBody(fragment.requestBody, resolve);
+    for (const group of fragment.parameters ?? []) expandParameters(group, parameters, resolve);
+    if (fragment.requestBody) requestBody = toRequestBody(fragment.requestBody, resolve);
     for (const [status, spec] of Object.entries(fragment.responses ?? {})) {
-      responses[status] = isReference(spec) ? spec : await toResponse(spec, resolve);
+      responses[status] = isReference(spec) ? spec : toResponse(spec, resolve);
     }
     Object.assign(callbacks, fragment.callbacks);
     Object.assign(extensions, fragment.extensions);
@@ -213,7 +208,7 @@ export async function generate(
   options: GenerateOptions = {},
 ): Promise<OpenAPIObject> {
   const schemas: Record<string, SchemaObject> = {};
-  const resolve: Resolve = async (schema, io) => hoistDefs(await resolveSchema(schema, io, options), schemas);
+  const resolve: Resolve = (schema, io) => hoistDefs(resolveSchema(schema, io), schemas);
 
   const paths: PathsObject = {};
   const inherited: OperationFragment[] = [];
@@ -228,7 +223,7 @@ export async function generate(
     const own = entry.handlers.map(fragmentOf).filter((fragment): fragment is OperationFragment => !!fragment);
     if (!own.length && !(options.includeUndocumented ?? true)) continue;
 
-    const operation = await buildOperation([...inherited, ...own], resolve);
+    const operation = buildOperation([...inherited, ...own], resolve);
     if (!operation) continue;
 
     const path = toOpenAPIPath(entry.path);
@@ -245,7 +240,7 @@ export async function generate(
   }
 
   return {
-    openapi: options.openapi ?? "3.1.1",
+    openapi: options.openapi ?? "3.1.2",
     info: config.info,
     ...(config.jsonSchemaDialect ? { jsonSchemaDialect: config.jsonSchemaDialect } : {}),
     ...(config.servers ? { servers: config.servers } : {}),

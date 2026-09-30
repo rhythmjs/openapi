@@ -18,7 +18,14 @@ export function apiDocument(options: ApiDocumentOptions): Middleware<RhythmHttpC
       await next();
       return;
     }
-    cached ??= generate(options.router, options.config, options);
+    if (!cached) {
+      const pending = generate(options.router, options.config, options);
+      // A failed generation must not stick: drop it so the next request retries.
+      pending.catch(() => {
+        if (cached === pending) cached = undefined;
+      });
+      cached = pending;
+    }
     ctx.json(await cached);
   };
 }
