@@ -1,138 +1,28 @@
 {
-  "name": "@rhythmjs/openapi",
-  "version": "0.0.4",
-  "description": "OpenAPI 3.1 documentation middleware (request/response schemas, operations, security, docs UI) for Rhythm routers and handlers.",
-  "keywords": [
-    "documentation",
-    "json-schema",
-    "middleware",
-    "openapi",
-    "rhythm",
-    "scalar",
-    "standard-schema",
-    "swagger",
-    "zod"
-  ],
+  "name": "openapi",
+  "private": true,
+  "description": "Rhythm OpenAPI monorepo: @rhythmjs/openapi and its example. Bun workspaces, bun test, bun build.",
   "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rhythmjs/openapi.git"
-  },
-  "files": [
-    "dist"
-  ],
   "type": "module",
-  "sideEffects": false,
-  "exports": {
-    "./types": {
-      "types": "./dist/types/types.d.ts",
-      "default": "./dist/types/types.js"
-    },
-    "./metadata": {
-      "types": "./dist/metadata/metadata.d.ts",
-      "default": "./dist/metadata/metadata.js"
-    },
-    "./resolver": {
-      "types": "./dist/resolver/resolver.d.ts",
-      "default": "./dist/resolver/resolver.js"
-    },
-    "./body": {
-      "types": "./dist/body/body.d.ts",
-      "default": "./dist/body/body.js"
-    },
-    "./query": {
-      "types": "./dist/query/query.d.ts",
-      "default": "./dist/query/query.js"
-    },
-    "./param": {
-      "types": "./dist/param/param.d.ts",
-      "default": "./dist/param/param.js"
-    },
-    "./header": {
-      "types": "./dist/header/header.d.ts",
-      "default": "./dist/header/header.js"
-    },
-    "./cookie": {
-      "types": "./dist/cookie/cookie.d.ts",
-      "default": "./dist/cookie/cookie.js"
-    },
-    "./operation": {
-      "types": "./dist/operation/operation.d.ts",
-      "default": "./dist/operation/operation.js"
-    },
-    "./response": {
-      "types": "./dist/response/response.d.ts",
-      "default": "./dist/response/response.js"
-    },
-    "./tags": {
-      "types": "./dist/tags/tags.d.ts",
-      "default": "./dist/tags/tags.js"
-    },
-    "./security": {
-      "types": "./dist/security/security.d.ts",
-      "default": "./dist/security/security.js"
-    },
-    "./exclude": {
-      "types": "./dist/exclude/exclude.d.ts",
-      "default": "./dist/exclude/exclude.js"
-    },
-    "./extension": {
-      "types": "./dist/extension/extension.d.ts",
-      "default": "./dist/extension/extension.js"
-    },
-    "./callback": {
-      "types": "./dist/callback/callback.d.ts",
-      "default": "./dist/callback/callback.js"
-    },
-    "./document": {
-      "types": "./dist/document/document.d.ts",
-      "default": "./dist/document/document.js"
-    },
-    "./generate": {
-      "types": "./dist/generate/generate.d.ts",
-      "default": "./dist/generate/generate.js"
-    },
-    "./docs": {
-      "types": "./dist/docs/docs.d.ts",
-      "default": "./dist/docs/docs.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
   "scripts": {
-    "build": "bun build src/types/types.ts src/metadata/metadata.ts src/resolver/resolver.ts src/body/body.ts src/query/query.ts src/param/param.ts src/header/header.ts src/cookie/cookie.ts src/operation/operation.ts src/response/response.ts src/tags/tags.ts src/security/security.ts src/exclude/exclude.ts src/extension/extension.ts src/callback/callback.ts src/document/document.ts src/generate/generate.ts src/docs/docs.ts --outdir dist --root src --format esm --target bun --packages external --splitting && tsc -p tsconfig.build.json",
-    "prepublishOnly": "bun run check && bun test && bun run build",
-    "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "lint": "oxlint src",
-    "fmt": "prettier --write \"src/**/*.ts\" \"*.json\"",
-    "fmt:check": "prettier --check \"src/**/*.ts\" \"*.json\"",
+    "build": "bun run --filter '@rhythmjs/*' build",
+    "typecheck": "bun run --filter '*' typecheck",
+    "lint": "oxlint packages/*/src examples/*/src",
+    "fmt": "prettier --write \"packages/*/src/**/*.ts\" \"examples/*/src/**/*.ts\" \"packages/*/*.json\" \"examples/*/*.json\" \"*.json\"",
+    "fmt:check": "prettier --check \"packages/*/src/**/*.ts\" \"examples/*/src/**/*.ts\" \"packages/*/*.json\" \"examples/*/*.json\" \"*.json\"",
     "check": "bun run fmt:check && bun run lint && bun run typecheck"
   },
-  "dependencies": {
-    "@standard-schema/spec": "^1.1.0"
-  },
   "devDependencies": {
-    "@rhythmjs/rhythm": "^0.0.11",
-    "@rhythmjs/router": "^0.0.11",
     "@types/bun": "^1.2.0",
     "@types/node": "^26.6.3",
     "oxlint": "^1.0.0",
     "prettier": "^3.5.0",
-    "typescript": "^7.0.2",
-    "zod": "^4.6.5"
-  },
-  "peerDependencies": {
-    "@rhythmjs/rhythm": "^0.0.11",
-    "@rhythmjs/router": "^0.0.11",
-    "zod": "^4.2.0"
-  },
-  "peerDependenciesMeta": {
-    "zod": {
-      "optional": true
-    }
+    "typescript": "^7.0.2"
   },
   "engines": {
     "bun": ">=1.2.0"

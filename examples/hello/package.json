@@ -1,0 +1,15 @@
+{
+  "name": "example-hello",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/main.ts",
+    "start": "bun src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rhythmjs/openapi": "workspace:*",
+    "@rhythmjs/rhythm": "^0.0.12",
+    "@rhythmjs/router": "^0.0.12"
+  }
+}

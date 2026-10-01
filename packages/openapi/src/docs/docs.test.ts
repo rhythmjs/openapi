@@ -126,3 +126,108 @@ describe("apiReference", () => {
     expect(html).toContain("Petstore &lt;docs&gt;");
   });
 });
+
+describe("apiDocument as YAML", () => {
+  const yamlApp = (options: { path?: string; format?: "json" | "yaml" }) => {
+    const router = new RhythmRouter().get("/hello", apiResponse(200, { description: "Greets" }), (ctx) => {
+      ctx.json({ hello: "world" });
+    });
+    return toFetchHandler(new Rhythm<RhythmHttpContext>().use(apiDocument({ router, config, ...options })));
+  };
+
+  test("format: yaml serves the same document at /openapi.yaml", async () => {
+    const res = await yamlApp({ format: "yaml" })(new Request("http://localhost/openapi.yaml"));
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("application/yaml");
+    const text = await res.text();
+    expect(text).toContain("openapi: 3.1.2");
+    const json = await (await app()(new Request("http://localhost/openapi.json"))).json();
+    expect(Bun.YAML.parse(text)).toEqual(json as never);
+  });
+
+  test("a .yml or .yaml path selects YAML without the option", async () => {
+    for (const path of ["/openapi.yml", "/spec/api.yaml"]) {
+      const res = await yamlApp({ path })(new Request(`http://localhost${path}`));
+
+      expect(res.headers.get("content-type")).toContain("application/yaml");
+      expect(Bun.YAML.parse(await res.text())).toHaveProperty("openapi", "3.1.2");
+    }
+  });
+
+  test("the JSON endpoint and the default paths are unchanged", async () => {
+    const res = await yamlApp({})(new Request("http://localhost/openapi.json"));
+
+    expect(res.headers.get("content-type")).toContain("application/json");
+    expect(((await res.json()) as { openapi: string }).openapi).toBe("3.1.2");
+    expect((await yamlApp({ format: "yaml" })(new Request("http://localhost/openapi.json"))).status).toBe(200);
+  });
+});
+
+describe("apiReference options", () => {
+  const page = async (options: Parameters<typeof apiReference>[0]) =>
+    (
+      await toFetchHandler(new Rhythm<RhythmHttpContext>().use(apiReference(options)))(
+        new Request("http://localhost/docs"),
+      )
+    ).text();
+
+  test("scalar options are passed to Scalar as its configuration, HTML-escaped", async () => {
+    const html = await page({ scalar: { theme: "purple", customCss: 'a[href="x"] { color: red }', hideModels: true } });
+    const attr = html.match(/data-configuration="([^"]*)"/)?.[1] ?? "";
+    const config = JSON.parse(
+      attr.replaceAll("&quot;", '"').replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&"),
+    );
+
+    expect(config).toEqual({ theme: "purple", customCss: 'a[href="x"] { color: red }', hideModels: true });
+    expect(html).toContain('data-url="/openapi.json"');
+  });
+
+  test("no scalar options means no configuration attribute", async () => {
+    expect(await page({})).not.toContain("data-configuration");
+  });
+
+  test("a nonce goes on every script tag, for both UIs", async () => {
+    for (const ui of ["scalar", "swagger"] as const) {
+      const html = await page({ ui, nonce: 'abc"123' });
+      const scripts = html.match(/<script\b[^>]*>/g) ?? [];
+
+      expect(scripts.length).toBeGreaterThanOrEqual(2);
+      for (const tag of scripts) expect(tag).toContain('nonce="abc&quot;123"');
+    }
+  });
+
+  test("cdn pins Scalar to your own version and drops the built-in integrity hash", async () => {
+    const html = await page({ cdn: "https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.67.0/" });
+
+    expect(html).toContain(
+      'src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.67.0/dist/browser/standalone.js"',
+    );
+    expect(html).not.toContain("integrity=");
+  });
+
+  test("cdn points Swagger UI at a self-hosted folder", async () => {
+    const html = await page({ ui: "swagger", cdn: "/assets/swagger-ui" });
+
+    expect(html).toContain('href="/assets/swagger-ui/swagger-ui.css"');
+    expect(html).toContain('src="/assets/swagger-ui/swagger-ui-bundle.js"');
+    expect(html).not.toContain("integrity=");
+  });
+
+  test("cdn must be an http(s) URL or a root-relative path", () => {
+    expect(() => apiReference({ cdn: "javascript:alert(1)" })).toThrow(TypeError);
+    expect(() => apiReference({ cdn: "assets/scalar" })).toThrow(TypeError);
+  });
+
+  test("swagger options are merged into SwaggerUIBundle, script-safe, and cannot replace the url", async () => {
+    const html = await page({
+      ui: "swagger",
+      swagger: { docExpansion: "none", persistAuthorization: true, filter: "</script><b>", url: "/evil" },
+    });
+
+    expect(html).toContain('"docExpansion":"none"');
+    expect(html).toContain('"persistAuthorization":true');
+    expect(html).not.toContain("</script><b>");
+    expect(html).toContain('url: "/openapi.json", dom_id: "#swagger-ui"');
+  });
+});
