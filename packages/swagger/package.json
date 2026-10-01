@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/swagger",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Swagger UI page for Rhythm on Bun: serves Swagger UI from a CDN, pointed at any OpenAPI document URL.",
   "keywords": [
     "api-reference",

@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/scalar",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Scalar API reference page for Rhythm on Bun: serves the Scalar UI (via @scalar/client-side-rendering), pointed at any OpenAPI document URL.",
   "keywords": [
     "api-reference",
