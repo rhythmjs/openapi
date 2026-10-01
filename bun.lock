@@ -17,8 +17,8 @@
       "dependencies": {
         "@rhythmjs/http": "^0.0.8",
         "@rhythmjs/openapi": "workspace:*",
-        "@rhythmjs/rhythm": "^0.0.12",
-        "@rhythmjs/router": "^0.0.12",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
         "@rhythmjs/scalar": "workspace:*",
         "@rhythmjs/swagger": "workspace:*",
         "zod": "^4.6.5",
@@ -29,8 +29,8 @@
       "dependencies": {
         "@rhythmjs/http": "^0.0.8",
         "@rhythmjs/openapi": "workspace:*",
-        "@rhythmjs/rhythm": "^0.0.12",
-        "@rhythmjs/router": "^0.0.12",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
         "@rhythmjs/scalar": "workspace:*",
         "@rhythmjs/swagger": "workspace:*",
         "zod": "^4.6.5",
@@ -38,20 +38,20 @@
     },
     "packages/openapi": {
       "name": "@rhythmjs/openapi",
-      "version": "0.0.5",
+      "version": "0.0.6",
       "dependencies": {
         "@standard-schema/spec": "^1.1.0",
       },
       "devDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.12",
-        "@rhythmjs/router": "^0.0.12",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
         "zod": "^4.6.5",
       },
       "peerDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.11",
-        "@rhythmjs/router": "^0.0.11",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
         "zod": "^4.2.0",
       },
       "optionalPeers": [
@@ -60,33 +60,33 @@
     },
     "packages/scalar": {
       "name": "@rhythmjs/scalar",
-      "version": "0.0.5",
+      "version": "0.0.6",
       "dependencies": {
         "@scalar/client-side-rendering": "^0.4.7",
       },
       "devDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.12",
-        "@rhythmjs/router": "^0.0.12",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
       },
       "peerDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.11",
-        "@rhythmjs/router": "^0.0.11",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
       },
     },
     "packages/swagger": {
       "name": "@rhythmjs/swagger",
-      "version": "0.0.5",
+      "version": "0.0.6",
       "devDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.12",
-        "@rhythmjs/router": "^0.0.12",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
       },
       "peerDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.11",
-        "@rhythmjs/router": "^0.0.11",
+        "@rhythmjs/rhythm": "^0.0.14",
+        "@rhythmjs/router": "^0.0.13",
       },
     },
   },
@@ -222,44 +222,64 @@
 
     "zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
 
-    "@rhythmjs/openapi/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.13", "@rhythmjs/router": "^0.0.12", "i18next": "*" }, "optionalPeers": ["i18next"] }],
+    "@rhythmjs/openapi/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.14", "@rhythmjs/router": "^0.0.13", "i18next": "*" }, "optionalPeers": ["i18next"] }],
 
     "@rhythmjs/openapi/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
     "@rhythmjs/openapi/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", { "dependencies": { "@rhythmjs/rhythm": "workspace:*", "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
-    "@rhythmjs/scalar/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.13", "@rhythmjs/router": "^0.0.12", "i18next": "*" }, "optionalPeers": ["i18next"] }],
+    "@rhythmjs/scalar/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.14", "@rhythmjs/router": "^0.0.13", "i18next": "*" }, "optionalPeers": ["i18next"] }],
 
     "@rhythmjs/scalar/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
     "@rhythmjs/scalar/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", { "dependencies": { "@rhythmjs/rhythm": "workspace:*", "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
-    "@rhythmjs/swagger/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.13", "@rhythmjs/router": "^0.0.12", "i18next": "*" }, "optionalPeers": ["i18next"] }],
+    "@rhythmjs/swagger/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.14", "@rhythmjs/router": "^0.0.13", "i18next": "*" }, "optionalPeers": ["i18next"] }],
 
     "@rhythmjs/swagger/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
     "@rhythmjs/swagger/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", { "dependencies": { "@rhythmjs/rhythm": "workspace:*", "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
-    "example-groups/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.13", "@rhythmjs/router": "^0.0.12", "i18next": "*" }, "optionalPeers": ["i18next"] }],
+    "example-groups/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.14", "@rhythmjs/router": "^0.0.13", "i18next": "*" }, "optionalPeers": ["i18next"] }],
 
     "example-groups/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
     "example-groups/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", { "dependencies": { "@rhythmjs/rhythm": "workspace:*", "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
-    "example-hello/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.13", "@rhythmjs/router": "^0.0.12", "i18next": "*" }, "optionalPeers": ["i18next"] }],
+    "example-hello/@rhythmjs/http": ["@rhythmjs/http@file:../http", { "dependencies": { "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "i18next": "^26.4.2", "oxlint": "^1.0.0", "prettier": "^3.5.0", "typescript": "^7.0.2" }, "peerDependencies": { "@rhythmjs/rhythm": "^0.0.14", "@rhythmjs/router": "^0.0.13", "i18next": "*" }, "optionalPeers": ["i18next"] }],
 
     "example-hello/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
     "example-hello/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", { "dependencies": { "@rhythmjs/rhythm": "workspace:*", "rou3": "^0.11.0" }, "devDependencies": { "@types/bun": "^1.2.0", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
 
-    "@rhythmjs/openapi/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
+    "@rhythmjs/openapi/@rhythmjs/http/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
 
-    "@rhythmjs/scalar/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
+    "@rhythmjs/openapi/@rhythmjs/http/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", {}],
 
-    "@rhythmjs/swagger/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
+    "@rhythmjs/openapi/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
 
-    "example-groups/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
+    "@rhythmjs/scalar/@rhythmjs/http/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
 
-    "example-hello/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", { "devDependencies": { "@types/bun": "^1.4.2", "@types/node": "^26.6.3", "typescript": "^7.0.2" } }],
+    "@rhythmjs/scalar/@rhythmjs/http/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", {}],
+
+    "@rhythmjs/scalar/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
+
+    "@rhythmjs/swagger/@rhythmjs/http/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
+
+    "@rhythmjs/swagger/@rhythmjs/http/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", {}],
+
+    "@rhythmjs/swagger/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
+
+    "example-groups/@rhythmjs/http/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
+
+    "example-groups/@rhythmjs/http/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", {}],
+
+    "example-groups/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
+
+    "example-hello/@rhythmjs/http/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
+
+    "example-hello/@rhythmjs/http/@rhythmjs/router": ["@rhythmjs/router@file:../rhythm/packages/router", {}],
+
+    "example-hello/@rhythmjs/router/@rhythmjs/rhythm": ["@rhythmjs/rhythm@file:../rhythm/packages/rhythm", {}],
   }
 }
