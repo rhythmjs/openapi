@@ -37,14 +37,14 @@ function serializeIssues(issues: readonly StandardSchemaV1.Issue[]): ValidationI
 }
 
 function collectMultiValue<T>(pairs: Iterable<[string, T]>): Record<string, T | T[]> {
-  const out: Record<string, T | T[]> = {};
+  const out = new Map<string, T | T[]>();
   for (const [key, value] of pairs) {
-    const existing = out[key];
-    if (existing === undefined) out[key] = value;
+    const existing = out.get(key);
+    if (existing === undefined) out.set(key, value);
     else if (Array.isArray(existing)) existing.push(value);
-    else out[key] = [existing, value];
+    else out.set(key, [existing, value]);
   }
-  return out;
+  return Object.fromEntries(out);
 }
 
 export function collectQuery(url: string): Record<string, string | string[]> {
