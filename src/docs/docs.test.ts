@@ -85,6 +85,35 @@ describe("apiReference", () => {
     expect(html).toContain('data-url="/openapi.json"');
   });
 
+  test("pins CDN assets to an exact version with integrity hashes", async () => {
+    const scalar = await (await app()(new Request("http://localhost/docs"))).text();
+    const swagger = await (
+      await toFetchHandler(new Rhythm<RhythmHttpContext>().use(apiReference({ ui: "swagger" })))(
+        new Request("http://localhost/docs"),
+      )
+    ).text();
+
+    for (const html of [scalar, swagger]) {
+      for (const tag of html.match(/<(?:script|link)\b[^>]*https:\/\/[^>]*>/g) ?? []) {
+        expect(tag).toMatch(/@\d+\.\d+\.\d+\//);
+        expect(tag).toMatch(/integrity="sha384-[A-Za-z0-9+/]+=*"/);
+        expect(tag).toContain('crossorigin="anonymous"');
+      }
+    }
+    expect(scalar).toContain("https://cdn.jsdelivr.net/npm/@scalar/api-reference@");
+  });
+
+  test("escapes the spec URL for the JS string in the Swagger page", async () => {
+    const handler = toFetchHandler(
+      new Rhythm<RhythmHttpContext>().use(apiReference({ ui: "swagger", specUrl: '/x\\"</script><b>' })),
+    );
+
+    const html = await (await handler(new Request("http://localhost/docs"))).text();
+
+    expect(html).not.toContain("</script><b>");
+    expect(html).toContain('url: "/x\\\\\\"\\u003c/script>\\u003cb>"');
+  });
+
   test("serves Swagger UI when asked", async () => {
     const handler = toFetchHandler(
       new Rhythm<RhythmHttpContext>().use(apiReference({ ui: "swagger", title: "Petstore <docs>" })),

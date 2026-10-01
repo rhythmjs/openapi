@@ -221,7 +221,7 @@ export async function generate(
     }
 
     const own = entry.handlers.map(fragmentOf).filter((fragment): fragment is OperationFragment => !!fragment);
-    if (!own.length && !(options.includeUndocumented ?? true)) continue;
+    if (!own.length && !(options.includeUndocumented ?? false)) continue;
 
     const operation = buildOperation([...inherited, ...own], resolve);
     if (!operation) continue;

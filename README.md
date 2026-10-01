@@ -126,21 +126,24 @@ const config = defineDocument({
 });
 
 const doc = await generate(router, config, {
-  // openapi: "3.1.2", includeUndocumented: true,
+  // openapi: "3.1.2", includeUndocumented: false,
 });
 ```
 
 `generate` walks `router.entries`, merges fragments per route, converts `:id` to `{id}`, resolves schemas
 (request schemas on their input side, response schemas on their output side), and hoists `$defs` into
-`components.schemas`. Undocumented routes are included with a default `200` response
-(`includeUndocumented: false` drops them).
+`components.schemas`. Undocumented routes are dropped by default so internal routes are not
+published by accident; `includeUndocumented: true` lists them with a default `200` response.
 
 ## Serving the docs
 
 - `apiDocument({ router, config, path? })`: serves the generated JSON (default `/openapi.json`), generated
   lazily once and cached.
 - `apiReference({ path?, specUrl?, ui?, title? })`: serves an interactive reference page (default `/docs`,
-  Scalar; `ui: "swagger"` for Swagger UI).
+  Scalar; `ui: "swagger"` for Swagger UI). The UI scripts load from a CDN at an exact pinned version with
+  Subresource Integrity hashes, so a moved or compromised CDN file is refused by the browser.
+- Neither middleware has authentication: both publish your route map. Mount them behind your own auth
+  (or only outside production) if the API is not public.
 
 ## Not covered
 

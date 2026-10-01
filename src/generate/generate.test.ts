@@ -52,7 +52,7 @@ describe("generate", () => {
         ok,
       );
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(doc.openapi).toBe("3.1.2");
     expect(doc.info).toEqual({ title: "Test API", version: "1.0.0" });
@@ -78,7 +78,7 @@ describe("generate", () => {
   test("router-level fragments apply only to routes registered after them", async () => {
     const router = new RhythmRouter().get("/before", ok).use(apiTags("tagged")).get("/after", ok);
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(op(doc, "/before", "get").tags).toBeUndefined();
     expect(op(doc, "/after", "get").tags).toEqual(["tagged"]);
@@ -93,7 +93,7 @@ describe("generate", () => {
       ok,
     );
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
     const params = op(doc, "/search", "get").parameters as ParameterObject[];
 
     const byName = Object.fromEntries(params.map((p) => [p.name, p]));
@@ -104,11 +104,12 @@ describe("generate", () => {
   test("undocumented routes get a default response, and can be dropped via includeUndocumented", async () => {
     const router = new RhythmRouter().get("/health", ok);
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
     expect(op(doc, "/health", "get").responses).toEqual({
       "200": { description: "Successful response" },
     });
 
+    expect((await generate(router, config)).paths).toEqual({});
     const sparse = await generate(router, config, { includeUndocumented: false });
     expect(sparse.paths).toEqual({});
   });
@@ -120,7 +121,7 @@ describe("generate", () => {
       .use(apiExclude())
       .get("/also-internal", ok);
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(Object.keys(doc.paths ?? {})).toEqual(["/public"]);
   });
@@ -128,7 +129,7 @@ describe("generate", () => {
   test("apiNoSecurity overrides inherited security with an empty requirement", async () => {
     const router = new RhythmRouter().use(apiBearerAuth()).get("/private", ok).get("/login", apiNoSecurity(), ok);
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(op(doc, "/private", "get").security).toEqual([{ bearer: [] }]);
     expect(op(doc, "/login", "get").security).toEqual([]);
@@ -137,7 +138,7 @@ describe("generate", () => {
   test("route-level security re-adds requirements after an inherited apiNoSecurity", async () => {
     const router = new RhythmRouter().use(apiNoSecurity()).get("/open", ok).get("/locked", apiBearerAuth(), ok);
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(op(doc, "/open", "get").security).toEqual([]);
     expect(op(doc, "/locked", "get").security).toEqual([{ bearer: [] }]);
@@ -146,7 +147,7 @@ describe("generate", () => {
   test("operation extensions land on the operation object", async () => {
     const router = new RhythmRouter().get("/x", apiExtension("x-internal", true), ok);
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(op(doc, "/x", "get")["x-internal"]).toBe(true);
   });
@@ -165,7 +166,7 @@ describe("generate", () => {
       ok,
     );
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(doc.components?.schemas?.User).toEqual({ type: "object", properties: { id: { type: "string" } } });
     const response = op(doc, "/user", "get").responses?.["200"] as unknown as {
@@ -183,7 +184,7 @@ describe("generate", () => {
       ok,
     );
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
     const operation = op(doc, "/count", "post");
     const request = operation.requestBody as {
       content: Record<string, { schema: { properties: Record<string, { type: string }> } }>;
@@ -199,7 +200,7 @@ describe("generate", () => {
   test("wildcard segments become a {wildcard} template parameter path", async () => {
     const router = new RhythmRouter().get("/files/*", ok);
 
-    const doc = await generate(router, config);
+    const doc = await generate(router, config, { includeUndocumented: true });
 
     expect(Object.keys(doc.paths ?? {})).toEqual(["/files/{wildcard}"]);
   });
