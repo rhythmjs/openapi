@@ -11,7 +11,7 @@ export interface SwaggerOptions {
   path?: string;
   url?: string;
   sources?: readonly SwaggerSource[];
-  title?: string;
+  pageTitle?: string;
   swaggerOptions?: Record<string, unknown>;
   cdn?: string;
   nonce?: string;
@@ -79,13 +79,13 @@ function swaggerPage(
 
 export const swaggerModule = {
   forRoot(options: SwaggerOptions = {}) {
-    const { path = "/docs", url, sources, title = "API Reference", swaggerOptions = {}, cdn, nonce } = options;
+    const { path = "/docs", url, sources, pageTitle = "API Reference", swaggerOptions = {}, cdn, nonce } = options;
     if (url !== undefined && sources !== undefined) {
       throw new TypeError("swaggerModule takes either url or sources, not both");
     }
     const page = swaggerPage(
       sources === undefined ? { url: url ?? "/openapi.json" } : { sources },
-      title,
+      pageTitle,
       cdn,
       nonce,
       swaggerOptions,

@@ -33,7 +33,7 @@ the app. The page is built once when the module is created. Register it before a
 | `path`           | `/docs`         | where the page is served                                                                                                        |
 | `url`            | `/openapi.json` | the document the page loads (escaped into the page's JavaScript)                                                                |
 | `sources`        |                 | several documents in one page, `{ url, title? }[]`, in Swagger UI's top-bar dropdown; exclusive with `url`                      |
-| `title`          | `API Reference` | the page title (HTML-escaped)                                                                                                   |
+| `pageTitle`      | `API Reference` | the page title (HTML-escaped)                                                                                                   |
 | `swaggerOptions` |                 | merged into `SwaggerUIBundle` (`docExpansion`, `persistAuthorization`, ...); `url` and `dom_id` stay under the module's control |
 | `nonce`          |                 | a Content-Security-Policy nonce set on every script tag                                                                         |
 | `cdn`            |                 | your own copy of Swagger UI: the folder holding `swagger-ui.css` and `swagger-ui-bundle.js` (http(s) or root-relative)          |

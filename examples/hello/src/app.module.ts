@@ -15,8 +15,10 @@ const openapiConfig = defineDocument({
 export const appModule = new Rhythm<RhythmHttpContext>({ name: "app", type: "module" })
   .provide(() => ({ appService }))
   .register(openapiModule.forRoot({ document: openapiConfig, path: "/api/openapi.json" }))
-  .register(scalarModule.forRoot({ path: "/api/docs", url: "/api/openapi.json", title: "Hello API", theme: "purple" }))
-  .register(swaggerModule.forRoot({ path: "/api/swagger", url: "/api/openapi.json", title: "Hello API" }))
+  .register(
+    scalarModule.forRoot({ path: "/api/docs", url: "/api/openapi.json", pageTitle: "Hello API", theme: "purple" }),
+  )
+  .register(swaggerModule.forRoot({ path: "/api/swagger", url: "/api/openapi.json", pageTitle: "Hello API" }))
   .use(appController.middleware())
   .use((ctx) => {
     ctx.response.status = 404;

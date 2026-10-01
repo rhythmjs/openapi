@@ -31,12 +31,10 @@ describe("groups", () => {
 
   test("the UIs sit at the top level and list both documents", async () => {
     const scalar = await (await get("/docs")).text();
-    expect(scalar).toContain(
-      "&quot;url&quot;:&quot;/api/v1/openapi.json&quot;,&quot;title&quot;:&quot;Public API&quot;",
-    );
-    expect(scalar).toContain(
-      "&quot;url&quot;:&quot;/api/platform/openapi.json&quot;,&quot;title&quot;:&quot;Platform API&quot;",
-    );
+    expect(scalar).toContain('"url": "/api/v1/openapi.json"');
+    expect(scalar).toContain('"title": "Public API"');
+    expect(scalar).toContain('"url": "/api/platform/openapi.json"');
+    expect(scalar).toContain('"title": "Platform API"');
 
     const swagger = await (await get("/swagger")).text();
     expect(swagger).toContain('{"url":"/api/v1/openapi.json","name":"Public API"}');

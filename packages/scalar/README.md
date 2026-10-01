@@ -1,8 +1,10 @@
 # @rhythmjs/scalar
 
 The [Scalar](https://scalar.com) API reference page for [Rhythm](https://github.com/rhythmjs/rhythm) on Bun. It serves
-a small HTML page that loads Scalar from a CDN and points it at an OpenAPI document URL. It does not generate or serve
-the document: pair it with [`@rhythmjs/openapi`](../openapi), or point `url` at any other source.
+a small HTML page that loads Scalar from a CDN and points it at an OpenAPI document URL, rendered with Scalar's own
+[`@scalar/client-side-rendering`](https://github.com/scalar/scalar/tree/main/packages/client-side-rendering), the
+package behind Scalar's Hono, Express and other integrations. It does not generate or serve the document: pair it with
+[`@rhythmjs/openapi`](../openapi), or point `url` at any other source.
 
 ## Install
 
@@ -26,21 +28,26 @@ const app = new Rhythm<RhythmHttpContext>()
 ```
 
 `scalarModule.forRoot(options?)` answers `GET` on its `path` only (an exact match) and leaves every other request to
-the app. The page is built once when the module is created. Register it before any catch-all middleware.
+the app. The page is rendered once when the module is created. Register it before any catch-all middleware.
 
-| Option  | Default         | Meaning                                                                                                             |
-| ------- | --------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `path`  | `/docs`         | where the page is served                                                                                            |
-| `url`   | `/openapi.json` | the document the page loads (HTML-escaped into the page); exclusive with `sources`                                  |
-| `title` | `API Reference` | the page title (HTML-escaped)                                                                                       |
-| `nonce` |                 | a Content-Security-Policy nonce set on every script tag                                                             |
-| `cdn`   |                 | your own copy of Scalar: its package base URL (http(s) or root-relative), served from `/dist/browser/standalone.js` |
+The options are Scalar's own, typed by `@scalar/types`, plus `path`:
 
-| `sources` | | several documents in one page, `{ url, title?, slug?, default? }[]`, listed in Scalar's document dropdown; exclusive with `url` |
+| Option      | Default                                       | Meaning                                                                                                                 |
+| ----------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `path`      | `/docs`                                       | where the page is served                                                                                                |
+| `url`       | `/openapi.json` (when no `sources`/`content`) | the document the page loads                                                                                             |
+| `sources`   |                                               | several documents in one page, `{ url, title?, slug?, default? }[]`, in Scalar's document dropdown                      |
+| `pageTitle` | `Scalar API Reference`                        | the page title (HTML-escaped)                                                                                           |
+| `nonce`     |                                               | a Content-Security-Policy nonce for the inline scripts; it also selects the single-file bundle, which can carry a nonce |
+| `cdn`       | jsDelivr                                      | URL of the single-file (UMD) Scalar bundle, for self-hosting or pinning                                                 |
+| `bundle`    |                                               | `false` for the single-file bundle, or the URL of a specific ESM build                                                  |
 
-Every other option is Scalar's own configuration, passed through as it is: `theme`, `layout`, `darkMode`,
-`hideModels`, `customCss`, `withDefaultFonts`, and the rest of
-[Scalar's options](https://scalar.com/products/api-references/configuration).
+Every other option is Scalar's configuration, passed through as it is: `theme`, `layout`, `darkMode`, `hideModels`,
+`customCss`, and the rest of [Scalar's options](https://scalar.com/products/api-references/configuration).
+
+Like Scalar's own integrations, the page loads the latest Scalar build from jsDelivr, so the browser needs network
+access to render it, and there is no version or Subresource Integrity pin. Set `cdn` or `bundle` to a URL you control
+or a pinned version if you want one.
 
 ## Several documents
 
@@ -60,7 +67,3 @@ new Rhythm<RhythmHttpContext>()
     }),
   );
 ```
-
-By default Scalar loads from jsDelivr at an exact pinned version with a Subresource Integrity hash, so a moved or
-compromised CDN file is refused by the browser. A custom `cdn` drops the built-in hash, because it belongs to the
-default file. The browser needs network access to render the page.

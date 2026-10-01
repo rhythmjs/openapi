@@ -93,7 +93,7 @@ describe("swaggerModule", () => {
   });
 
   test("escapes the title, and the spec URL for the JS string", async () => {
-    const html = await (await get(app({ title: "Petstore <docs>", url: '/x\\"</script><b>' }), "/docs")).text();
+    const html = await (await get(app({ pageTitle: "Petstore <docs>", url: '/x\\"</script><b>' }), "/docs")).text();
 
     expect(html).toContain("<title>Petstore &lt;docs&gt;</title>");
     expect(html).not.toContain("</script><b>");

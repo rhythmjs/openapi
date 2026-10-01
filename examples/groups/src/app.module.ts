@@ -13,8 +13,8 @@ const sources = [
 export const appModule = new Rhythm<RhythmHttpContext>({ name: "app", type: "module" })
   .register(apiModule)
   .register(platformModule)
-  .register(scalarModule.forRoot({ path: "/docs", sources, title: "API Reference" }))
-  .register(swaggerModule.forRoot({ path: "/swagger", sources, title: "API Reference" }))
+  .register(scalarModule.forRoot({ path: "/docs", sources, pageTitle: "API Reference" }))
+  .register(swaggerModule.forRoot({ path: "/swagger", sources, pageTitle: "API Reference" }))
   .use((ctx) => {
     ctx.response.status = 404;
     ctx.response.headers.set("content-type", "application/json");
