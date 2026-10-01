@@ -1,16 +1,14 @@
 {
   "name": "@rhythmjs/openapi",
   "version": "0.0.4",
-  "description": "OpenAPI 3.1 documentation middleware (request/response schemas, operations, security, docs UI) for Rhythm routers and handlers.",
+  "description": "OpenAPI 3.1 documentation middleware (request/response schemas, operations, security) and spec endpoint for Rhythm routers and handlers.",
   "keywords": [
     "documentation",
     "json-schema",
     "middleware",
     "openapi",
     "rhythm",
-    "scalar",
     "standard-schema",
-    "swagger",
     "zod"
   ],
   "license": "ISC",
@@ -93,9 +91,9 @@
       "types": "./dist/generate/generate.d.ts",
       "default": "./dist/generate/generate.js"
     },
-    "./docs": {
-      "types": "./dist/docs/docs.d.ts",
-      "default": "./dist/docs/docs.js"
+    "./module": {
+      "types": "./dist/module/module.d.ts",
+      "default": "./dist/module/module.js"
     },
     "./package.json": "./package.json"
   },
@@ -103,7 +101,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "bun build src/types/types.ts src/metadata/metadata.ts src/resolver/resolver.ts src/body/body.ts src/query/query.ts src/param/param.ts src/header/header.ts src/cookie/cookie.ts src/operation/operation.ts src/response/response.ts src/tags/tags.ts src/security/security.ts src/exclude/exclude.ts src/extension/extension.ts src/callback/callback.ts src/document/document.ts src/generate/generate.ts src/docs/docs.ts --outdir dist --root src --format esm --target bun --packages external --splitting && tsc -p tsconfig.build.json",
+    "build": "bun build src/types/types.ts src/metadata/metadata.ts src/resolver/resolver.ts src/body/body.ts src/query/query.ts src/param/param.ts src/header/header.ts src/cookie/cookie.ts src/operation/operation.ts src/response/response.ts src/tags/tags.ts src/security/security.ts src/exclude/exclude.ts src/extension/extension.ts src/callback/callback.ts src/document/document.ts src/generate/generate.ts src/module/module.ts --outdir dist --root src --format esm --target bun --packages external --splitting && tsc -p tsconfig.build.json",
     "prepublishOnly": "bun run typecheck && bun test && bun run build",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
@@ -112,11 +110,13 @@
     "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
+    "@rhythmjs/http": "^0.0.8",
     "@rhythmjs/rhythm": "^0.0.12",
     "@rhythmjs/router": "^0.0.12",
     "zod": "^4.6.5"
   },
   "peerDependencies": {
+    "@rhythmjs/http": "^0.0.8",
     "@rhythmjs/rhythm": "^0.0.11",
     "@rhythmjs/router": "^0.0.11",
     "zod": "^4.2.0"

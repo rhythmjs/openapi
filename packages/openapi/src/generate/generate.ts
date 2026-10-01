@@ -34,6 +34,10 @@ export interface RouterSource {
   >;
 }
 
+function isRouterList(value: RouterSource | readonly RouterSource[]): value is readonly RouterSource[] {
+  return Array.isArray(value);
+}
+
 export interface GenerateOptions {
   openapi?: string;
   includeUndocumented?: boolean;
@@ -203,7 +207,7 @@ function buildOperation(fragments: readonly OperationFragment[], resolve: Resolv
 }
 
 export async function generate(
-  router: RouterSource,
+  routers: RouterSource | readonly RouterSource[],
   config: OpenAPIConfig,
   options: GenerateOptions = {},
 ): Promise<OpenAPIObject> {
@@ -211,24 +215,26 @@ export async function generate(
   const resolve: Resolve = (schema, io) => hoistDefs(resolveSchema(schema, io), schemas);
 
   const paths: PathsObject = {};
-  const inherited: OperationFragment[] = [];
 
-  for (const entry of router.entries) {
-    if (entry.kind === "middleware") {
-      const fragment = fragmentOf(entry.fn);
-      if (fragment) inherited.push(fragment);
-      continue;
+  for (const router of isRouterList(routers) ? routers : [routers]) {
+    const inherited: OperationFragment[] = [];
+    for (const entry of router.entries) {
+      if (entry.kind === "middleware") {
+        const fragment = fragmentOf(entry.fn);
+        if (fragment) inherited.push(fragment);
+        continue;
+      }
+
+      const own = entry.handlers.map(fragmentOf).filter((fragment): fragment is OperationFragment => !!fragment);
+      if (!own.length && !(options.includeUndocumented ?? false)) continue;
+
+      const operation = buildOperation([...inherited, ...own], resolve);
+      if (!operation) continue;
+
+      const path = toOpenAPIPath(entry.path);
+      const method = entry.method.toLowerCase() as keyof PathItemObject;
+      (paths[path] ??= {})[method] = operation as never;
     }
-
-    const own = entry.handlers.map(fragmentOf).filter((fragment): fragment is OperationFragment => !!fragment);
-    if (!own.length && !(options.includeUndocumented ?? false)) continue;
-
-    const operation = buildOperation([...inherited, ...own], resolve);
-    if (!operation) continue;
-
-    const path = toOpenAPIPath(entry.path);
-    const method = entry.method.toLowerCase() as keyof PathItemObject;
-    (paths[path] ??= {})[method] = operation as never;
   }
 
   const components: ComponentsObject = { ...config.components };

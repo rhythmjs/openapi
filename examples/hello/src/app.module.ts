@@ -1,17 +1,22 @@
 import { defineDocument } from "@rhythmjs/openapi/document";
-import { apiDocument, apiReference } from "@rhythmjs/openapi/docs";
+import { openapiModule } from "@rhythmjs/openapi/module";
+import { scalarModule } from "@rhythmjs/scalar";
+import { swaggerModule } from "@rhythmjs/swagger";
 import { Rhythm } from "@rhythmjs/rhythm";
 import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
 import { appController } from "./app.controller";
 import { appService } from "./app.service";
 
-const openapiConfig = defineDocument({ info: { title: "Hello API", version: "1.0.0" } });
+const openapiConfig = defineDocument({
+  info: { title: "Hello API", version: "1.0.0" },
+  securitySchemes: { bearer: { type: "http", scheme: "bearer", bearerFormat: "JWT" } },
+});
 
 export const appModule = new Rhythm<RhythmHttpContext>({ name: "app", type: "module" })
   .provide(() => ({ appService }))
-  .use(apiDocument({ router: appController, config: openapiConfig }))
-  .use(apiDocument({ router: appController, config: openapiConfig, format: "yaml" }))
-  .use(apiReference({ title: "Hello API", specUrl: "/openapi.yaml", scalar: { theme: "purple" } }))
+  .register(openapiModule.forRoot({ document: openapiConfig, path: "/api/openapi.json" }))
+  .register(scalarModule.forRoot({ path: "/api/docs", url: "/api/openapi.json", title: "Hello API", theme: "purple" }))
+  .register(swaggerModule.forRoot({ path: "/api/swagger", url: "/api/openapi.json", title: "Hello API" }))
   .use(appController.middleware())
   .use((ctx) => {
     ctx.response.status = 404;

@@ -1,7 +1,7 @@
 {
   "name": "openapi",
   "private": true,
-  "description": "Rhythm OpenAPI monorepo: @rhythmjs/openapi and its example. Bun workspaces, bun test, bun build.",
+  "description": "Rhythm OpenAPI monorepo: @rhythmjs/openapi (spec generation), @rhythmjs/swagger and @rhythmjs/scalar (reference UIs), and an example. Bun workspaces, bun test, bun build.",
   "license": "ISC",
   "type": "module",
   "workspaces": [
@@ -26,5 +26,10 @@
   },
   "engines": {
     "bun": ">=1.2.0"
+  },
+  "overrides": {
+    "@rhythmjs/http": "file:../http",
+    "@rhythmjs/rhythm": "file:../rhythm/packages/rhythm",
+    "@rhythmjs/router": "file:../rhythm/packages/router"
   }
 }

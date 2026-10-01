@@ -1,0 +1,53 @@
+{
+  "name": "@rhythmjs/swagger",
+  "version": "0.0.1",
+  "description": "Swagger UI page for Rhythm on Bun: serves Swagger UI from a CDN, pointed at any OpenAPI document URL.",
+  "keywords": [
+    "api-reference",
+    "bun",
+    "openapi",
+    "rhythm",
+    "swagger",
+    "swagger-ui"
+  ],
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhythmjs/openapi.git",
+    "directory": "packages/swagger"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/swagger.d.ts",
+      "default": "./dist/swagger.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun build src/swagger.ts --outdir dist --root src --format esm --target bun --packages external && tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@rhythmjs/http": "^0.0.8",
+    "@rhythmjs/rhythm": "^0.0.12",
+    "@rhythmjs/router": "^0.0.12"
+  },
+  "peerDependencies": {
+    "@rhythmjs/http": "^0.0.8",
+    "@rhythmjs/rhythm": "^0.0.11",
+    "@rhythmjs/router": "^0.0.11"
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  }
+}

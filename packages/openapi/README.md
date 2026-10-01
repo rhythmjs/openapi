@@ -2,8 +2,9 @@
 
 OpenAPI 3.1 documentation for [Rhythm](https://github.com/rhythmjs/rhythm), the Bun-native backend
 framework. Routes are documented by small single-purpose middlewares (`apiBody`, `apiResponse`, `apiTags`, …); a generator walks the
-router and produces the document; a docs middleware serves it with an interactive reference UI. Each module is
-exported by its own subpath; there is no root barrel export.
+routers and produces the document; a module serves it as JSON. Reference UIs live in separate packages:
+[`@rhythmjs/scalar`](../scalar) and [`@rhythmjs/swagger`](../swagger). Each module is exported by its own subpath;
+there is no root barrel export.
 
 Schemas are [Standard Schema v1](https://standardschema.dev). Conversion to JSON Schema goes through the
 Standard JSON Schema interface (`~standard.jsonSchema`, spec 1.1); zod v4.2+ implements it natively, and raw
@@ -12,7 +13,7 @@ JSON Schema objects pass through untouched.
 ## Install
 
 ```sh
-bun add @rhythmjs/openapi @rhythmjs/rhythm @rhythmjs/router
+bun add @rhythmjs/openapi @rhythmjs/http @rhythmjs/rhythm @rhythmjs/router
 ```
 
 `@rhythmjs/router` >= 0.0.6 is required (the generator reads `router.entries`). `zod` >= 4.2 is an optional
@@ -31,7 +32,7 @@ import { apiResponse } from "@rhythmjs/openapi/response";
 import { apiTags } from "@rhythmjs/openapi/tags";
 import { apiBearerAuth } from "@rhythmjs/openapi/security";
 import { defineDocument } from "@rhythmjs/openapi/document";
-import { apiDocument, apiReference } from "@rhythmjs/openapi/docs";
+import { openapiModule } from "@rhythmjs/openapi/module";
 import { z } from "zod";
 
 const User = z.object({ id: z.string(), name: z.string() });
@@ -66,8 +67,7 @@ const config = defineDocument({
 });
 
 const app = new Rhythm<RhythmHttpContext>()
-  .use(apiDocument({ router: users, config })) // GET /openapi.json
-  .use(apiReference()) // GET /docs (Scalar; { ui: "swagger" } for Swagger UI)
+  .register(openapiModule.forRoot({ document: config })) // GET /openapi.json
   .use(users.middleware());
 ```
 
@@ -135,27 +135,36 @@ const doc = await generate(router, config, {
 `components.schemas`. Undocumented routes are dropped by default so internal routes are not
 published by accident; `includeUndocumented: true` lists them with a default `200` response.
 
-## Serving the docs
+## Serving the document
 
-- `apiDocument({ router, config, path?, format? })`: serves the generated document (default `/openapi.json`),
-  generated lazily once and cached. `format: "yaml"` serves it as YAML (default path `/openapi.yaml`, content type
-  `application/yaml`) using Bun's built-in YAML support (Bun 1.2.21+); a `path` ending in `.yml` or `.yaml` selects YAML
-  too. Mount it twice to serve both.
-- `apiReference({ path?, specUrl?, ui?, title?, scalar?, swagger?, cdn?, nonce? })`: serves an interactive reference
-  page (default `/docs`, Scalar; `ui: "swagger"` for Swagger UI) that loads the document from `specUrl` (JSON or YAML).
-  - `scalar`: Scalar's own configuration, passed through as-is: `theme`, `layout`, `darkMode`, `hideModels`,
-    `customCss`, `withDefaultFonts`, and the rest of [Scalar's options](https://scalar.com/products/api-references/configuration).
-  - `swagger`: options merged into `SwaggerUIBundle` (`docExpansion`, `persistAuthorization`, `deepLinking`, and
-    any other JSON-serializable option; `url` and `dom_id` stay under the middleware's control).
-  - `cdn`: use your own copy of the UI. Scalar takes its package base URL
-    (`https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.67.0`, served from `/dist/browser/standalone.js`) and Swagger UI the
-    folder holding `swagger-ui.css` and `swagger-ui-bundle.js`. An http(s) URL or a root-relative path for self-hosting.
-  - `nonce`: a Content-Security-Policy nonce, set on every script tag the page renders.
-    By default the UI scripts load from a CDN at an exact pinned version with Subresource Integrity hashes, so a
-    moved or compromised CDN file is refused by the browser. A custom `cdn` drops those built-in hashes, because they
-    belong to the default files.
-- Neither middleware has authentication: both publish your route map. Mount them behind your own auth
-  (or only outside production) if the API is not public.
+`openapiModule.forRoot({ document, path?, openapi?, includeUndocumented? })` is a kernel module, in the spirit of
+NestJS's `SwaggerModule`. Register it once and mount your routers as usual: it scans the app it is registered in
+(including nested modules) for routers, so no router is ever passed to it. It serves the document as JSON at
+`/openapi.json` (`path` moves it), mounted with `@rhythmjs/http/mount`, so only `GET` on that exact path is answered
+and everything else falls through to your app. The document is generated lazily once and cached; a failed generation
+is evicted so the next request retries. It also provides `openapiService.document()` to the app.
+
+A document covers the app its module is registered in, including everything registered inside that app. Register one
+`openapiModule` at the root for a single document of the whole API, or one inside each group module for a separate
+document per group, each at its own `path`; a UI at the top of the app can list them all with its `sources` option (see
+[`examples/groups`](../../examples/groups)). The module has to be added
+with `register()`, which is how it learns its app; mounting it with `use(module.middleware())` fails with an error on
+the first request.
+
+The module serves the document and nothing else, so any consumer can use it. To render it, register a UI package
+next to it and point `url` at the document:
+
+```ts
+import { scalarModule } from "@rhythmjs/scalar"; // or swaggerModule from "@rhythmjs/swagger"
+
+new Rhythm<RhythmHttpContext>()
+  .register(openapiModule.forRoot({ document: config }))
+  .register(scalarModule.forRoot({ theme: "purple" })) // GET /docs, loads /openapi.json
+  .use(users.middleware());
+```
+
+The document endpoint has no authentication, and it publishes your route map. Register the module behind your own
+auth (or only outside production) if the API is not public.
 
 ## Not covered
 
