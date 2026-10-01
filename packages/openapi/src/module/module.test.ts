@@ -64,16 +64,22 @@ describe("openapiModule", () => {
     expect(await paths("/users/openapi.json")).toEqual(["/users/"]);
   });
 
-  test("fails with a clear error when mounted with middleware() instead of register()", async () => {
-    const unregistered = openapiModule.forRoot({ document });
-    const app = new Rhythm<RhythmHttpContext>().use(unregistered.middleware() as never).use(hello.middleware());
+  test("documents the app when added with use(module.middleware()) too", async () => {
+    const app = new Rhythm<RhythmHttpContext>()
+      .use(openapiModule.forRoot({ document }).middleware() as never)
+      .use(hello.middleware());
 
-    const failure = await toFetchHandler(app)(new Request("http://localhost/openapi.json")).catch(
-      (error: Error) => error,
-    );
+    const body = (await (await get(toFetchHandler(app), "/openapi.json")).json()) as { paths: object };
+    expect(Object.keys(body.paths)).toEqual(["/hello"]);
+  });
+
+  test("fails with a clear error when the module was never added to an app", async () => {
+    const failure = await toFetchHandler(openapiModule.forRoot({ document }))(
+      new Request("http://localhost/openapi.json"),
+    ).catch((error: Error) => error);
 
     expect(((failure as Error).cause ?? failure) as Error).toMatchObject({
-      message: expect.stringContaining("add it with app.register(openapiModule.forRoot"),
+      message: expect.stringContaining("documents the app it is registered in"),
     });
   });
 
