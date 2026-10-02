@@ -43,9 +43,9 @@
     "@rhythmjs/router": "^0.0.13"
   },
   "peerDependencies": {
-    "@rhythmjs/http": "^0.0.8",
-    "@rhythmjs/rhythm": "^0.0.14",
-    "@rhythmjs/router": "^0.0.13"
+    "@rhythmjs/http": ">=0.0.9",
+    "@rhythmjs/rhythm": ">=0.0.14",
+    "@rhythmjs/router": ">=0.0.13"
   },
   "engines": {
     "bun": ">=1.2.0"
