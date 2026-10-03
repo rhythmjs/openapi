@@ -36,8 +36,8 @@ describe("openapiModule", () => {
 
     const doc = (await res.json()) as { info: { title: string }; paths: Record<string, Record<string, any>> };
     expect(doc.info.title).toBe("Module API");
-    expect(Object.keys(doc.paths).sort()).toEqual(["/hello", "/users/"]);
-    expect(doc.paths["/users/"]!.get.tags).toEqual(["users"]);
+    expect(Object.keys(doc.paths).sort()).toEqual(["/hello", "/users"]);
+    expect(doc.paths["/users"]!.get.tags).toEqual(["users"]);
   });
 
   test("keeps each router's own middleware scoped to that router", async () => {
@@ -61,7 +61,7 @@ describe("openapiModule", () => {
       Object.keys(((await (await get(handler, url)).json()) as { paths: object }).paths);
 
     expect(await paths("/hello-group/openapi.json")).toEqual(["/hello"]);
-    expect(await paths("/users/openapi.json")).toEqual(["/users/"]);
+    expect(await paths("/users/openapi.json")).toEqual(["/users"]);
   });
 
   test("documents the app when added with use(module.middleware()) too", async () => {
@@ -92,7 +92,7 @@ describe("openapiModule", () => {
 
     const doc = (await (await get(toFetchHandler(app), "/openapi.json")).json()) as { paths: Record<string, unknown> };
 
-    expect(Object.keys(doc.paths).sort()).toEqual(["/hello", "/users/"]);
+    expect(Object.keys(doc.paths).sort()).toEqual(["/hello", "/users"]);
   });
 
   test("answers only GET on its path; everything else falls through to the app", async () => {

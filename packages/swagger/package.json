@@ -39,8 +39,8 @@
   },
   "devDependencies": {
     "@rhythmjs/http": "^0.0.8",
-    "@rhythmjs/rhythm": "^0.0.14",
-    "@rhythmjs/router": "^0.0.13"
+    "@rhythmjs/rhythm": "^0.0.15",
+    "@rhythmjs/router": "^0.0.14"
   },
   "peerDependencies": {
     "@rhythmjs/http": ">=0.0.9",

@@ -17,8 +17,8 @@
       "dependencies": {
         "@rhythmjs/http": "^0.0.8",
         "@rhythmjs/openapi": "workspace:*",
-        "@rhythmjs/rhythm": "^0.0.14",
-        "@rhythmjs/router": "^0.0.13",
+        "@rhythmjs/rhythm": "^0.0.15",
+        "@rhythmjs/router": "^0.0.14",
         "@rhythmjs/scalar": "workspace:*",
         "@rhythmjs/swagger": "workspace:*",
         "zod": "^4.6.5",
@@ -29,8 +29,8 @@
       "dependencies": {
         "@rhythmjs/http": "^0.0.8",
         "@rhythmjs/openapi": "workspace:*",
-        "@rhythmjs/rhythm": "^0.0.14",
-        "@rhythmjs/router": "^0.0.13",
+        "@rhythmjs/rhythm": "^0.0.15",
+        "@rhythmjs/router": "^0.0.14",
         "@rhythmjs/scalar": "workspace:*",
         "@rhythmjs/swagger": "workspace:*",
         "zod": "^4.6.5",
@@ -44,14 +44,14 @@
       },
       "devDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.14",
-        "@rhythmjs/router": "^0.0.13",
+        "@rhythmjs/rhythm": "^0.0.15",
+        "@rhythmjs/router": "^0.0.14",
         "zod": "^4.6.5",
       },
       "peerDependencies": {
         "@rhythmjs/http": ">=0.0.9",
-        "@rhythmjs/rhythm": ">=0.0.14",
-        "@rhythmjs/router": ">=0.0.13",
+        "@rhythmjs/rhythm": ">=0.0.15",
+        "@rhythmjs/router": ">=0.0.14",
         "zod": "*",
       },
       "optionalPeers": [
@@ -66,8 +66,8 @@
       },
       "devDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.14",
-        "@rhythmjs/router": "^0.0.13",
+        "@rhythmjs/rhythm": "^0.0.15",
+        "@rhythmjs/router": "^0.0.14",
       },
       "peerDependencies": {
         "@rhythmjs/http": ">=0.0.9",
@@ -80,8 +80,8 @@
       "version": "0.0.6",
       "devDependencies": {
         "@rhythmjs/http": "^0.0.8",
-        "@rhythmjs/rhythm": "^0.0.14",
-        "@rhythmjs/router": "^0.0.13",
+        "@rhythmjs/rhythm": "^0.0.15",
+        "@rhythmjs/router": "^0.0.14",
       },
       "peerDependencies": {
         "@rhythmjs/http": ">=0.0.9",

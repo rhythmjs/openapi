@@ -12,8 +12,10 @@ const openapiConfig = defineDocument({
   securitySchemes: { bearer: { type: "http", scheme: "bearer", bearerFormat: "JWT" } },
 });
 
-export const appModule = new Rhythm<RhythmHttpContext>({ name: "app", type: "module" })
-  .provide(() => ({ appService }))
+const baseModule = new Rhythm<RhythmHttpContext, { appService: typeof appService }>({ name: "app", type: "module" });
+baseModule.context.appService = appService;
+
+export const appModule = baseModule
   .register(openapiModule.forRoot({ document: openapiConfig, path: "/api/openapi.json" }))
   .register(
     scalarModule.forRoot({ path: "/api/docs", url: "/api/openapi.json", pageTitle: "Hello API", theme: "purple" }),

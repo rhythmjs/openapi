@@ -16,7 +16,7 @@ describe("groups", () => {
     const platform = (await (await get("/api/platform/openapi.json")).json()) as Document;
 
     expect(api.info.title).toBe("Public API");
-    expect(Object.keys(api.paths)).toEqual(["/api/v1/users/", "/api/v1/users/{id}"]);
+    expect(Object.keys(api.paths)).toEqual(["/api/v1/users", "/api/v1/users/{id}"]);
     expect(platform.info.title).toBe("Platform API");
     expect(Object.keys(platform.paths)).toEqual(["/api/platform/health", "/api/platform/tenants"]);
   });

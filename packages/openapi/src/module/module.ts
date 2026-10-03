@@ -44,17 +44,19 @@ export const openapiModule = {
       },
     };
 
-    const module = new Rhythm<RhythmHttpContext>({ type: "module", name: "openapi" })
-      .provide(() => ({ openapiService }))
-      .use(
-        mount(path, async (ctx, next) => {
-          if (ctx.request.method !== "GET") {
-            await next();
-            return;
-          }
-          return Response.json(await openapiService.document());
-        }),
-      );
-    return module;
+    const module = new Rhythm<RhythmHttpContext, { openapiService: OpenapiService }>({
+      type: "module",
+      name: "openapi",
+    });
+    module.context.openapiService = openapiService;
+    return module.use(
+      mount(path, async (ctx, next) => {
+        if (ctx.request.method !== "GET") {
+          await next();
+          return;
+        }
+        return Response.json(await openapiService.document());
+      }),
+    );
   },
 };

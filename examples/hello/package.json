@@ -10,8 +10,8 @@
   "dependencies": {
     "@rhythmjs/http": "^0.0.8",
     "@rhythmjs/openapi": "workspace:*",
-    "@rhythmjs/rhythm": "^0.0.14",
-    "@rhythmjs/router": "^0.0.13",
+    "@rhythmjs/rhythm": "^0.0.15",
+    "@rhythmjs/router": "^0.0.14",
     "@rhythmjs/scalar": "workspace:*",
     "@rhythmjs/swagger": "workspace:*",
     "zod": "^4.6.5"

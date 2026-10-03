@@ -142,7 +142,7 @@ NestJS's `SwaggerModule`. Register it once and mount your routers as usual: it s
 (including nested modules) for routers, so no router is ever passed to it. It serves the document as JSON at
 `/openapi.json` (`path` moves it), mounted with `@rhythmjs/http/mount`, so only `GET` on that exact path is answered
 and everything else falls through to your app. The document is generated lazily once and cached; a failed generation
-is evicted so the next request retries. It also provides `openapiService.document()` to the app.
+is evicted so the next request retries. It also puts `openapiService` on the module context, so `register(module, ({ openapiService }) => ({ openapiService }))` exposes `openapiService.document()` to the app.
 
 A document covers the app its module is registered in, including everything registered inside that app. Register one
 `openapiModule` at the root for a single document of the whole API, or one inside each group module for a separate
