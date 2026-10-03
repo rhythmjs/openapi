@@ -16,7 +16,5 @@ export const appModule = new Rhythm<RhythmHttpContext>({ name: "app", type: "mod
   .register(scalarModule.forRoot({ path: "/docs", sources, pageTitle: "API Reference" }))
   .register(swaggerModule.forRoot({ path: "/swagger", sources, pageTitle: "API Reference" }))
   .use((ctx) => {
-    ctx.response.status = 404;
-    ctx.response.headers.set("content-type", "application/json");
-    ctx.response.body = JSON.stringify({ success: false, status: 404, message: "Not Found" });
+    ctx.json({ success: false, status: 404, message: "Not Found" }, 404);
   });

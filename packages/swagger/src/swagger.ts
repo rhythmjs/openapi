@@ -96,7 +96,7 @@ export const swaggerModule = {
           await next();
           return;
         }
-        return new Response(page, { headers: { "content-type": "text/html; charset=utf-8" } });
+        ctx.html(page);
       }),
     );
   },

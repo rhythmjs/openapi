@@ -23,7 +23,5 @@ export const appModule = baseModule
   .register(swaggerModule.forRoot({ path: "/api/swagger", url: "/api/openapi.json", pageTitle: "Hello API" }))
   .use(appController.middleware())
   .use((ctx) => {
-    ctx.response.status = 404;
-    ctx.response.headers.set("content-type", "application/json");
-    ctx.response.body = JSON.stringify({ success: false, status: 404, message: "Not Found" });
+    ctx.json({ success: false, status: 404, message: "Not Found" }, 404);
   });
