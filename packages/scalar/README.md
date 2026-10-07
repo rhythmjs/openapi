@@ -1,10 +1,8 @@
 # @rhythmjs/scalar
 
-The [Scalar](https://scalar.com) API reference page for [Rhythm](https://github.com/rhythmjs/rhythm) on Bun. It serves
-a small HTML page that loads Scalar from a CDN and points it at an OpenAPI document URL, rendered with Scalar's own
-[`@scalar/client-side-rendering`](https://github.com/scalar/scalar/tree/main/packages/client-side-rendering), the
-package behind Scalar's Hono, Express and other integrations. It does not generate or serve the document: pair it with
-[`@rhythmjs/openapi`](../openapi), or point `url` at any other source.
+The [Scalar](https://scalar.com) API reference page for [Rhythm](https://github.com/rhythmjs/rhythm) on Bun. Mount
+`scalarModule` and you get a documentation page that renders any OpenAPI document by URL. It pairs naturally with
+[`@rhythmjs/openapi`](../openapi), which serves the document at `/openapi.json`, but it works with any other source.
 
 ## Install
 
@@ -12,54 +10,81 @@ package behind Scalar's Hono, Express and other integrations. It does not genera
 bun add @rhythmjs/scalar @rhythmjs/rhythm @rhythmjs/router
 ```
 
-The page is a plain `RhythmRouter` route, so only `GET` on that exact path is answered.
+Requires `@rhythmjs/rhythm` and `@rhythmjs/router` >= 0.0.18 and Bun >= 1.2. To generate the document, also install
+[`@rhythmjs/openapi`](../openapi).
 
-## Usage
+## Walkthrough
 
 ```ts
 import { Rhythm, mount } from "@rhythmjs/rhythm";
+import { RhythmRouter } from "@rhythmjs/router";
+import { toFetchHandler } from "@rhythmjs/router/fetch";
+import { defineDocument } from "@rhythmjs/openapi/document";
+import { documented } from "@rhythmjs/openapi/generate";
 import { openapiModule } from "@rhythmjs/openapi/module";
+import { apiResponse } from "@rhythmjs/openapi/response";
 import { scalarModule } from "@rhythmjs/scalar";
 
+const hello = documented(new RhythmRouter()).get(
+  "/hello",
+  apiResponse(200, { description: "A greeting", contentType: "text/plain", schema: { type: "string" } }),
+  (ctx) => {
+    ctx.text("Hello World!");
+  },
+);
+
+const document = defineDocument({ info: { title: "My API", version: "1.0.0" } });
+
 const app = new Rhythm()
-  .use(mount(openapiModule.forRoot({ document: config }))) // GET /openapi.json
+  .use(mount(openapiModule.forRoot({ document }))) // GET /openapi.json
   .use(mount(scalarModule.forRoot({ theme: "purple" }))) // GET /docs
-  .use(mount(users));
+  .use(mount(hello));
+
+Bun.serve({ fetch: toFetchHandler(app) });
 ```
 
-`scalarModule.forRoot(options?)` is a module (a `Rhythm` app) that you add with `mount()`. It answers `GET` on its
-`path` only (an exact match) and leaves every other request to the app. The page is rendered once when the module is
-created. A mounted module hands over to the rest of the app afterwards, so a later catch-all should check the response
-(`ctx.response.body === null`) before writing its own.
-
-The options are Scalar's own, typed by `@scalar/types`, plus `path`:
-
-| Option      | Default                                       | Meaning                                                                                                                 |
-| ----------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `path`      | `/docs`                                       | where the page is served                                                                                                |
-| `url`       | `/openapi.json` (when no `sources`/`content`) | the document the page loads                                                                                             |
-| `sources`   |                                               | several documents in one page, `{ url, title?, slug?, default? }[]`, in Scalar's document dropdown                      |
-| `pageTitle` | `Scalar API Reference`                        | the page title (HTML-escaped)                                                                                           |
-| `nonce`     |                                               | a Content-Security-Policy nonce for the inline scripts; it also selects the single-file bundle, which can carry a nonce |
-| `cdn`       | jsDelivr                                      | URL of the single-file (UMD) Scalar bundle, for self-hosting or pinning                                                 |
-| `bundle`    |                                               | `false` for the single-file bundle, or the URL of a specific ESM build                                                  |
-
-Every other option is Scalar's configuration, passed through as it is: `theme`, `layout`, `darkMode`, `hideModels`,
-`customCss`, and the rest of [Scalar's options](https://scalar.com/products/api-references/configuration).
-
-Like Scalar's own integrations, the page loads the latest Scalar build from jsDelivr, so the browser needs network
-access to render it, and there is no version or Subresource Integrity pin. Set `cdn` or `bundle` to a URL you control
-or a pinned version if you want one.
-
-## Several documents
-
-`sources` puts several documents in one page. Each group module can keep its own `openapiModule` (and so its own
-document and scope), while one UI at the top of the app lists them all:
+Visit `/docs`. With no `url`, `sources` or `content`, the page loads `/openapi.json`. To document a spec from somewhere
+else, skip `openapiModule` and pass `url`:
 
 ```ts
-new Rhythm()
-  .use(mount(apiModule)) // mounts openapiModule at /api/v1/openapi.json
-  .use(mount(platformModule)) // mounts openapiModule at /api/platform/openapi.json
+new Rhythm().use(mount(scalarModule.forRoot({ url: "https://example.com/openapi.json" })));
+```
+
+## API
+
+### `scalarModule.forRoot(options?)`
+
+Returns a `RhythmRouter` (named `scalar`) with one `GET` route, to be added with `mount()`. The HTML is rendered once,
+when `forRoot` is called.
+
+`ScalarOptions` is `Partial<HtmlRenderingConfiguration> & { path?: string }`: Scalar's own configuration (from
+`@scalar/client-side-rendering`), plus `path`.
+
+| Option      | Default                                          | Meaning                                                                                                   |
+| ----------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `path`      | `/docs`                                          | Where the page is served.                                                                                 |
+| `url`       | `/openapi.json` (only if no `sources`/`content`) | The document the page loads.                                                                              |
+| `sources`   |                                                  | Several documents in one page, `{ url, title?, slug?, default? }[]`, shown in Scalar's document dropdown. |
+| `pageTitle` | Scalar's default                                 | The page title.                                                                                           |
+| `nonce`     |                                                  | A Content-Security-Policy nonce for the inline scripts.                                                   |
+| `cdn`       | jsDelivr                                         | URL of the single-file Scalar bundle, for self-hosting or pinning a version.                              |
+| `bundle`    |                                                  | `false` to use the single-file bundle, or the URL of a specific ESM build.                                |
+
+Every other option is passed to Scalar as configuration: `theme`, `layout`, `darkMode`, `hideModels`, `customCss`, and
+the rest of [Scalar's options](https://scalar.com/products/api-references/configuration).
+
+By default the page loads Scalar from jsDelivr in the browser, so the browser needs network access and there is no
+Subresource Integrity pin. Set `cdn` or `bundle` to a URL you control to change that.
+
+### Several documents
+
+`sources` puts several documents in one page. Each group module can keep its own `openapiModule` (and so its own
+document), while one UI at the top lists them all:
+
+```ts
+const app = new Rhythm()
+  .use(mount(apiModule)) // mounts its own openapiModule at /api/v1/openapi.json
+  .use(mount(platformModule)) // mounts its own openapiModule at /api/platform/openapi.json
   .use(
     mount(
       scalarModule.forRoot({
@@ -71,3 +96,18 @@ new Rhythm()
     ),
   );
 ```
+
+See [`examples/groups`](../../examples/groups) for a complete app.
+
+## Gotchas
+
+- The page is a plain `RhythmRouter` route, so only `GET` on the exact `path` is answered. `/docs/` or `POST /docs`
+  fall through to the rest of your app.
+- `mount()` always calls `next()`, so requests the module does not answer continue to later middleware. A catch-all
+  placed after it (a 404 handler, say) should check `ctx.response.body === null` before writing its own response, and
+  belongs last in the app.
+- The page does not generate or serve the document. If `url` points at a path nothing serves, the page loads but shows
+  an error. Mount [`openapiModule`](../openapi) (or your own route) at that path.
+- The document and the UI are public routes. Mount them behind your own auth, or only outside production, if the API is
+  not public.
+- To offer Swagger UI as well, mount [`swaggerModule`](../swagger) with a different `path`.
