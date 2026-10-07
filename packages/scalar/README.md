@@ -9,26 +9,28 @@ package behind Scalar's Hono, Express and other integrations. It does not genera
 ## Install
 
 ```sh
-bun add @rhythmjs/scalar @rhythmjs/http @rhythmjs/rhythm @rhythmjs/router
+bun add @rhythmjs/scalar @rhythmjs/rhythm @rhythmjs/router
 ```
 
-`@rhythmjs/http` is a peer: the page is mounted with `@rhythmjs/http/mount`.
+The page is a plain `RhythmRouter` route, so only `GET` on that exact path is answered.
 
 ## Usage
 
 ```ts
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { openapiModule } from "@rhythmjs/openapi/module";
 import { scalarModule } from "@rhythmjs/scalar";
 
-const app = new Rhythm<RhythmHttpContext>()
-  .register(openapiModule.forRoot({ document: config })) // GET /openapi.json
-  .register(scalarModule.forRoot({ theme: "purple" })) // GET /docs
-  .use(users.middleware());
+const app = new Rhythm()
+  .use(mount(openapiModule.forRoot({ document: config }))) // GET /openapi.json
+  .use(mount(scalarModule.forRoot({ theme: "purple" }))) // GET /docs
+  .use(mount(users));
 ```
 
-`scalarModule.forRoot(options?)` answers `GET` on its `path` only (an exact match) and leaves every other request to
-the app. The page is rendered once when the module is created. Register it before any catch-all middleware.
+`scalarModule.forRoot(options?)` is a module (a `Rhythm` app) that you add with `mount()`. It answers `GET` on its
+`path` only (an exact match) and leaves every other request to the app. The page is rendered once when the module is
+created. A mounted module hands over to the rest of the app afterwards, so a later catch-all should check the response
+(`ctx.response.body === null`) before writing its own.
 
 The options are Scalar's own, typed by `@scalar/types`, plus `path`:
 
@@ -55,15 +57,17 @@ or a pinned version if you want one.
 document and scope), while one UI at the top of the app lists them all:
 
 ```ts
-new Rhythm<RhythmHttpContext>()
-  .register(apiModule) // registers openapiModule at /api/v1/openapi.json
-  .register(platformModule) // registers openapiModule at /api/platform/openapi.json
-  .register(
-    scalarModule.forRoot({
-      sources: [
-        { url: "/api/v1/openapi.json", title: "Public API" },
-        { url: "/api/platform/openapi.json", title: "Platform API" },
-      ],
-    }),
+new Rhythm()
+  .use(mount(apiModule)) // mounts openapiModule at /api/v1/openapi.json
+  .use(mount(platformModule)) // mounts openapiModule at /api/platform/openapi.json
+  .use(
+    mount(
+      scalarModule.forRoot({
+        sources: [
+          { url: "/api/v1/openapi.json", title: "Public API" },
+          { url: "/api/platform/openapi.json", title: "Platform API" },
+        ],
+      }),
+    ),
   );
 ```

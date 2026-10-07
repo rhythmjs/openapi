@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import type { DeriveMiddleware } from "@rhythmjs/rhythm/types";
+import type { ExtensionMiddleware } from "@rhythmjs/rhythm/types";
 import type { EncodingObject, ExampleObject, ReferenceObject } from "../types/types";
 import type { MediaTypeSpec } from "../metadata/metadata";
 import { bodyExtractor, schemaMiddleware, type Validated, type ValidationContext } from "../internal/runtime";
@@ -25,7 +25,7 @@ export interface ApiBodyOptions {
 export function apiBody<TSchema extends StandardSchemaV1>(
   schema: TSchema,
   options: ApiBodyOptions = {},
-): DeriveMiddleware<ValidationContext, Validated<"body", TSchema>> {
+): ExtensionMiddleware<ValidationContext, Validated<"body", TSchema>> {
   const contentType = options.contentType ?? "application/json";
   const content: Record<string, MediaTypeSpec> = options.content ?? {
     [contentType]: {

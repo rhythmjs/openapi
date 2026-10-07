@@ -1,9 +1,8 @@
-import { mount } from "@rhythmjs/http/mount";
-import { Rhythm } from "@rhythmjs/rhythm";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import { Pipeline } from "@rhythmjs/rhythm";
+import { RhythmRouter } from "@rhythmjs/router";
 import type { OpenAPIObject } from "../types/types";
 import type { OpenAPIConfig } from "../document/document";
-import { generate, type GenerateOptions, type RouterSource } from "../generate/generate";
+import { generate, isRouterSource, type GenerateOptions, type RouterSource } from "../generate/generate";
 
 export interface OpenapiOptions extends GenerateOptions {
   document: OpenAPIConfig;
@@ -14,8 +13,15 @@ export interface OpenapiService {
   document(): Promise<OpenAPIObject>;
 }
 
-function isRouter(source: object): source is RouterSource {
-  return Array.isArray((source as { entries?: unknown }).entries);
+function routersIn(sources: readonly object[], seen = new Set<object>()): RouterSource[] {
+  const routers: RouterSource[] = [];
+  for (const source of sources) {
+    if (seen.has(source)) continue;
+    seen.add(source);
+    if (isRouterSource(source)) routers.push(source);
+    if (source instanceof Pipeline) routers.push(...routersIn(source.sources, seen));
+  }
+  return routers;
 }
 
 export const openapiModule = {
@@ -30,11 +36,11 @@ export const openapiModule = {
           if (!scope) {
             return Promise.reject(
               new Error(
-                "openapiModule documents the app it is registered in: add it with app.register(openapiModule.forRoot(...)) or app.use(module.middleware())",
+                "openapiModule documents the app it is registered in: add it with app.use(mount(openapiModule.forRoot(...)))",
               ),
             );
           }
-          const pending = generate(scope.sources.filter(isRouter), config, generateOptions);
+          const pending = generate(routersIn(scope.sources), config, generateOptions);
           pending.catch(() => {
             if (cached === pending) cached = undefined;
           });
@@ -44,19 +50,9 @@ export const openapiModule = {
       },
     };
 
-    const module = new Rhythm<RhythmHttpContext, { openapiService: OpenapiService }>({
-      type: "module",
-      name: "openapi",
+    const module = new RhythmRouter({ name: "openapi" }).get(path, async (ctx) => {
+      ctx.json(await openapiService.document());
     });
-    module.context.openapiService = openapiService;
-    return module.use(
-      mount(path, async (ctx, next) => {
-        if (ctx.request.method !== "GET") {
-          await next();
-          return;
-        }
-        return Response.json(await openapiService.document());
-      }),
-    );
+    return Object.assign(module, { openapiService });
   },
 };

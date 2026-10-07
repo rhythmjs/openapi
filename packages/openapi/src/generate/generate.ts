@@ -34,6 +34,42 @@ export interface RouterSource {
   >;
 }
 
+type RouterEntries = RouterSource["entries"][number][];
+
+const RECORDED = Symbol.for("rhythmjs.openapi.routes");
+
+const METHODS = ["get", "post", "put", "patch", "delete"] as const;
+
+export function isRouterSource(source: unknown): source is RouterSource {
+  return typeof source === "object" && source !== null && Array.isArray((source as { entries?: unknown }).entries);
+}
+
+/**
+ * Records a router's `use()` calls and routes so they can be documented: `RhythmRouter` keeps its route table
+ * private, so wrap it right after construction, before anything is registered. The router is returned unchanged
+ * apart from the recording (a `RouterSource`), so it mounts and serves as usual.
+ */
+export function documented<R extends object>(router: R): R & RouterSource {
+  if (RECORDED in router) return router as unknown as R & RouterSource;
+  const entries: RouterEntries = [];
+  const target = router as unknown as Record<string, (...args: unknown[]) => unknown>;
+  const use = target.use!;
+  target.use = function (this: unknown, middleware: unknown, ...rest: unknown[]) {
+    entries.push({ kind: "middleware", fn: middleware });
+    return use.call(this, middleware, ...rest);
+  };
+  for (const name of METHODS) {
+    const original = target[name]!;
+    target[name] = function (this: unknown, path: unknown, ...handlers: unknown[]) {
+      entries.push({ kind: "route", method: name.toUpperCase(), path: String(path), handlers });
+      return original.call(this, path, ...handlers);
+    };
+  }
+  Object.defineProperty(router, RECORDED, { value: true });
+  Object.defineProperty(router, "entries", { get: () => [...entries], enumerable: true });
+  return router as R & RouterSource;
+}
+
 function isRouterList(value: RouterSource | readonly RouterSource[]): value is readonly RouterSource[] {
   return Array.isArray(value);
 }

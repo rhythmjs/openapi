@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import type { DeriveMiddleware } from "@rhythmjs/rhythm/types";
+import type { ExtensionMiddleware } from "@rhythmjs/rhythm/types";
 import type { ParameterOverride } from "../metadata/metadata";
 import { collectCookies, schemaMiddleware, type Validated, type ValidationContext } from "../internal/runtime";
 
@@ -10,7 +10,7 @@ export interface ApiCookieOptions {
 export function apiCookie<TSchema extends StandardSchemaV1>(
   schema: TSchema,
   options: ApiCookieOptions = {},
-): DeriveMiddleware<ValidationContext, Validated<"cookie", TSchema>> {
+): ExtensionMiddleware<ValidationContext, Validated<"cookie", TSchema>> {
   return schemaMiddleware(
     "cookie",
     schema,

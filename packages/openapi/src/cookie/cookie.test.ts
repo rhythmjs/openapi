@@ -1,13 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { RhythmRouter } from "@rhythmjs/router";
 import { toFetchHandler } from "@rhythmjs/router/fetch";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
 import { z } from "zod";
 import { fragmentOf } from "../metadata/metadata";
 import { apiCookie } from "./cookie";
 
-const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm<RhythmHttpContext>().use(router.middleware()));
+const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm().use(mount(router)));
 
 describe("apiCookie", () => {
   const sessionCookies = z.object({ session: z.string().min(1) });

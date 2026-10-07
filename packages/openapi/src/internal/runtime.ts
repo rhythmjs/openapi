@@ -1,13 +1,14 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import type { DeriveMiddleware, Middleware } from "@rhythmjs/rhythm/types";
-import type { RhythmRouterContext } from "@rhythmjs/router";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import type { ExtensionMiddleware, Middleware } from "@rhythmjs/rhythm/types";
+import type { RhythmHttpContext } from "@rhythmjs/router/context";
 import { withFragment, type OperationFragment } from "../metadata/metadata";
 
 export type ValidationTarget = "body" | "query" | "param" | "header" | "cookie";
 
-export type ValidationContext = RhythmHttpContext &
-  Partial<RhythmRouterContext> & { valid?: Partial<Record<ValidationTarget, unknown>> };
+export type ValidationContext = RhythmHttpContext & {
+  readonly params?: Readonly<Record<string, string>>;
+  valid?: Partial<Record<ValidationTarget, unknown>>;
+};
 
 export type Validated<TTarget extends ValidationTarget, TSchema extends StandardSchemaV1> = {
   valid: { [K in TTarget]: StandardSchemaV1.InferOutput<TSchema> };
@@ -115,7 +116,7 @@ export function schemaMiddleware<TTarget extends ValidationTarget, TSchema exten
   schema: TSchema,
   fragment: OperationFragment,
   extract: Extractor,
-): DeriveMiddleware<ValidationContext, Validated<TTarget, TSchema>> {
+): ExtensionMiddleware<ValidationContext, Validated<TTarget, TSchema>> {
   const middleware: Middleware<ValidationContext> = async (ctx, next) => {
     const fail = (issues: readonly ValidationIssue[]): void => {
       const failure: ValidationFailure = { success: false, target, issues };
@@ -137,5 +138,5 @@ export function schemaMiddleware<TTarget extends ValidationTarget, TSchema exten
     ctx.valid = { ...ctx.valid, [target]: result.value };
     await next();
   };
-  return withFragment(middleware, fragment) as DeriveMiddleware<ValidationContext, Validated<TTarget, TSchema>>;
+  return withFragment(middleware, fragment) as ExtensionMiddleware<ValidationContext, Validated<TTarget, TSchema>>;
 }

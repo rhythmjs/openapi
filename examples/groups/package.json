@@ -8,10 +8,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@rhythmjs/http": "^0.0.10",
     "@rhythmjs/openapi": "workspace:*",
-    "@rhythmjs/rhythm": "^0.0.16",
-    "@rhythmjs/router": "^0.0.16",
+    "@rhythmjs/rhythm": "^0.0.20",
+    "@rhythmjs/router": "^0.0.20",
     "@rhythmjs/scalar": "workspace:*",
     "@rhythmjs/swagger": "workspace:*",
     "zod": "^4.6.5"

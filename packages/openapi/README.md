@@ -13,35 +13,41 @@ JSON Schema objects pass through untouched.
 ## Install
 
 ```sh
-bun add @rhythmjs/openapi @rhythmjs/http @rhythmjs/rhythm @rhythmjs/router
+bun add @rhythmjs/openapi @rhythmjs/rhythm @rhythmjs/router
 ```
 
-`@rhythmjs/router` >= 0.0.6 is required (the generator reads `router.entries`). `zod` >= 4.2 is an optional
-peer, only needed when your routes use zod schemas (raw JSON Schema objects work without it).
+Requires `@rhythmjs/rhythm` and `@rhythmjs/router` >= 0.0.18. `zod` >= 4.2 is an
+optional peer, only needed when your routes use zod schemas (raw JSON Schema objects work without it).
+
+`RhythmRouter` keeps its route table private, so the generator cannot read it. Wrap each router you want documented
+with `documented()` (from `@rhythmjs/openapi/generate`) right after constructing it, before any route is added; it
+records `use()` and route calls on the same router, which mounts and serves as usual. A router that is not wrapped is
+not documented. Router `prefix` no longer exists: write each route's full path.
 
 ## Quick start
 
 ```ts
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { RhythmRouter } from "@rhythmjs/router";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
-import { apiBody, type Validated } from "@rhythmjs/openapi/body";
+import { toFetchHandler } from "@rhythmjs/router/fetch";
+import { apiBody } from "@rhythmjs/openapi/body";
 import { apiParam } from "@rhythmjs/openapi/param";
 import { apiOperation } from "@rhythmjs/openapi/operation";
 import { apiResponse } from "@rhythmjs/openapi/response";
 import { apiTags } from "@rhythmjs/openapi/tags";
 import { apiBearerAuth } from "@rhythmjs/openapi/security";
 import { defineDocument } from "@rhythmjs/openapi/document";
+import { documented } from "@rhythmjs/openapi/generate";
 import { openapiModule } from "@rhythmjs/openapi/module";
 import { z } from "zod";
 
 const User = z.object({ id: z.string(), name: z.string() });
 const CreateUser = z.object({ name: z.string().min(1) });
 
-const users = new RhythmRouter({ prefix: "/users" })
+const users = documented(new RhythmRouter())
   .use(apiTags("users"))
-  .post<Validated<"body", typeof CreateUser>>(
-    "/",
+  .post(
+    "/users",
     apiBody(CreateUser),
     apiOperation({ summary: "Create user", operationId: "createUser" }),
     apiBearerAuth(),
@@ -52,7 +58,7 @@ const users = new RhythmRouter({ prefix: "/users" })
     },
   )
   .get(
-    "/:id",
+    "/users/:id",
     apiParam(z.object({ id: z.string() })),
     apiResponse(200, { description: "The user", schema: User }),
     (ctx) => {
@@ -66,9 +72,11 @@ const config = defineDocument({
   securitySchemes: { bearer: { type: "http", scheme: "bearer", bearerFormat: "JWT" } },
 });
 
-const app = new Rhythm<RhythmHttpContext>()
-  .register(openapiModule.forRoot({ document: config })) // GET /openapi.json
-  .use(users.middleware());
+const app = new Rhythm()
+  .use(mount(openapiModule.forRoot({ document: config }))) // GET /openapi.json
+  .use(mount(users));
+
+Bun.serve({ fetch: toFetchHandler(app) });
 ```
 
 ## Request middlewares (validate + document)
@@ -130,37 +138,37 @@ const doc = await generate(router, config, {
 });
 ```
 
-`generate` walks `router.entries`, merges fragments per route, converts `:id` to `{id}`, resolves schemas
+`generate` walks the entries `documented()` recorded on each router, merges fragments per route, converts `:id` to `{id}`, resolves schemas
 (request schemas on their input side, response schemas on their output side), and hoists `$defs` into
 `components.schemas`. Undocumented routes are dropped by default so internal routes are not
 published by accident; `includeUndocumented: true` lists them with a default `200` response.
 
 ## Serving the document
 
-`openapiModule.forRoot({ document, path?, openapi?, includeUndocumented? })` is a kernel module, in the spirit of
-NestJS's `SwaggerModule`. Register it once and mount your routers as usual: it scans the app it is registered in
-(including nested modules) for routers, so no router is ever passed to it. It serves the document as JSON at
-`/openapi.json` (`path` moves it), mounted with `@rhythmjs/http/mount`, so only `GET` on that exact path is answered
+`openapiModule.forRoot({ document, path?, openapi?, includeUndocumented? })` is a module (a `Rhythm`
+app), in the spirit of NestJS's `SwaggerModule`. Mount it once with `mount(module)` and mount your routers as usual: it
+scans the app it is mounted in (including nested modules and routers) through `sources` for `documented()` routers, so
+no router is ever passed to it. It serves the document as JSON at
+`/openapi.json` (`path` moves it), as a plain `RhythmRouter` route, so only `GET` on that exact path is answered
 and everything else falls through to your app. The document is generated lazily once and cached; a failed generation
-is evicted so the next request retries. It also puts `openapiService` on the module context, so `register(module, ({ openapiService }) => ({ openapiService }))` exposes `openapiService.document()` to the app.
+is evicted so the next request retries. The module also carries the service it uses, `module.openapiService.document()`, for reading the document in code.
 
-A document covers the app its module is registered in, including everything registered inside that app. Register one
+A document covers the app its module is mounted in, including everything mounted inside that app. Register one
 `openapiModule` at the root for a single document of the whole API, or one inside each group module for a separate
 document per group, each at its own `path`; a UI at the top of the app can list them all with its `sources` option (see
-[`examples/groups`](../../examples/groups)). The module has to be added
-with `register()`, which is how it learns its app; mounting it with `use(module.middleware())` fails with an error on
-the first request.
+[`examples/groups`](../../examples/groups)). The module has to be mounted
+with `mount()`, which is how it learns its app; serving it on its own fails with an error on the first request.
 
-The module serves the document and nothing else, so any consumer can use it. To render it, register a UI package
+The module serves the document and nothing else, so any consumer can use it. To render it, mount a UI package
 next to it and point `url` at the document:
 
 ```ts
 import { scalarModule } from "@rhythmjs/scalar"; // or swaggerModule from "@rhythmjs/swagger"
 
-new Rhythm<RhythmHttpContext>()
-  .register(openapiModule.forRoot({ document: config }))
-  .register(scalarModule.forRoot({ theme: "purple" })) // GET /docs, loads /openapi.json
-  .use(users.middleware());
+new Rhythm()
+  .use(mount(openapiModule.forRoot({ document: config })))
+  .use(mount(scalarModule.forRoot({ theme: "purple" }))) // GET /docs, loads /openapi.json
+  .use(mount(users));
 ```
 
 The document endpoint has no authentication, and it publishes your route map. Register the module behind your own

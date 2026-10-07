@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { toFetchHandler } from "@rhythmjs/router/fetch";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
 import { swaggerModule, type SwaggerOptions } from "./swagger";
 
 const app = (options?: SwaggerOptions) =>
   toFetchHandler(
-    new Rhythm<RhythmHttpContext>()
-      .register(swaggerModule.forRoot(options))
-      .use((ctx) => ctx.json({ fellThrough: true })),
+    new Rhythm().use(mount(swaggerModule.forRoot(options))).use((ctx) => {
+      // a mounted module hands over to the rest of the app after it runs, so only answer if it did not
+      if (ctx.response.body === null) ctx.json({ fellThrough: true });
+    }),
   );
 
 const get = (handler: ReturnType<typeof app>, path: string, method = "GET") =>

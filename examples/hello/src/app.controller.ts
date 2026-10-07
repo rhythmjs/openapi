@@ -1,4 +1,5 @@
-import { apiBody, type Validated } from "@rhythmjs/openapi/body";
+import { documented } from "@rhythmjs/openapi/generate";
+import { apiBody } from "@rhythmjs/openapi/body";
 import { apiOperation } from "@rhythmjs/openapi/operation";
 import { apiParam } from "@rhythmjs/openapi/param";
 import { apiQuery } from "@rhythmjs/openapi/query";
@@ -6,11 +7,10 @@ import { apiResponse } from "@rhythmjs/openapi/response";
 import { apiBearerAuth } from "@rhythmjs/openapi/security";
 import { apiTags } from "@rhythmjs/openapi/tags";
 import { RhythmRouter } from "@rhythmjs/router";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
 import { z } from "zod";
 import type { appService } from "./app.service";
 
-export type AppContext = RhythmHttpContext & {
+export type AppContext = {
   appService: typeof appService;
 };
 
@@ -19,7 +19,7 @@ const GreetQuery = z.object({ name: z.string().default("World") });
 const GreetParams = z.object({ name: z.string() });
 const CustomGreeting = z.object({ name: z.string().min(1), message: z.string().min(1) });
 
-export const appController = new RhythmRouter<AppContext>()
+export const appController = documented(new RhythmRouter<AppContext>())
   .use(apiTags("greetings"))
   .use(async (ctx, next) => {
     ctx.response.headers.set("x-request-id", crypto.randomUUID());
@@ -33,7 +33,7 @@ export const appController = new RhythmRouter<AppContext>()
       ctx.text(ctx.appService.getHello());
     },
   )
-  .get<Validated<"query", typeof GreetQuery>>(
+  .get(
     "/greet",
     apiQuery(GreetQuery),
     apiOperation({ summary: "Greet by query string", operationId: "greetByQuery" }),
@@ -52,7 +52,7 @@ export const appController = new RhythmRouter<AppContext>()
     },
   )
 
-  .post<Validated<"body", typeof CustomGreeting>>(
+  .post(
     "/greet",
     apiBody(CustomGreeting),
     apiBearerAuth(),

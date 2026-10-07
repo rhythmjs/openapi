@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/scalar",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Scalar API reference page for Rhythm on Bun: serves the Scalar UI (via @scalar/client-side-rendering), pointed at any OpenAPI document URL.",
   "keywords": [
     "api-reference",
@@ -37,14 +37,12 @@
     "test": "bun test"
   },
   "devDependencies": {
-    "@rhythmjs/http": "^0.0.10",
-    "@rhythmjs/rhythm": "^0.0.16",
-    "@rhythmjs/router": "^0.0.16"
+    "@rhythmjs/rhythm": "^0.0.20",
+    "@rhythmjs/router": "^0.0.20"
   },
   "peerDependencies": {
-    "@rhythmjs/http": ">=0.0.9",
-    "@rhythmjs/rhythm": ">=0.0.14",
-    "@rhythmjs/router": ">=0.0.13"
+    "@rhythmjs/rhythm": ">=0.0.18",
+    "@rhythmjs/router": ">=0.0.18"
   },
   "engines": {
     "bun": ">=1.2.0"

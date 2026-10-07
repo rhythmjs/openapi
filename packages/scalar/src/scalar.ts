@@ -1,7 +1,5 @@
 import { renderApiReference, type HtmlRenderingConfiguration } from "@scalar/client-side-rendering";
-import { mount } from "@rhythmjs/http/mount";
-import { Rhythm } from "@rhythmjs/rhythm";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import { RhythmRouter } from "@rhythmjs/router";
 
 export type ScalarOptions = Partial<HtmlRenderingConfiguration> & { path?: string };
 
@@ -18,14 +16,8 @@ export const scalarModule = {
       nonce,
       bundle,
     });
-    return new Rhythm<RhythmHttpContext>({ type: "module", name: "scalar" }).use(
-      mount(path, async (ctx, next) => {
-        if (ctx.request.method !== "GET") {
-          await next();
-          return;
-        }
-        ctx.html(page);
-      }),
-    );
+    return new RhythmRouter({ name: "scalar" }).get(path, (ctx) => {
+      ctx.html(page);
+    });
   },
 };

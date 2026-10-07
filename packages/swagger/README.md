@@ -7,26 +7,28 @@ generate or serve the document: pair it with [`@rhythmjs/openapi`](../openapi), 
 ## Install
 
 ```sh
-bun add @rhythmjs/swagger @rhythmjs/http @rhythmjs/rhythm @rhythmjs/router
+bun add @rhythmjs/swagger @rhythmjs/rhythm @rhythmjs/router
 ```
 
-`@rhythmjs/http` is a peer: the page is mounted with `@rhythmjs/http/mount`.
+The page is a plain `RhythmRouter` route, so only `GET` on that exact path is answered.
 
 ## Usage
 
 ```ts
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { openapiModule } from "@rhythmjs/openapi/module";
 import { swaggerModule } from "@rhythmjs/swagger";
 
-const app = new Rhythm<RhythmHttpContext>()
-  .register(openapiModule.forRoot({ document: config })) // GET /openapi.json
-  .register(swaggerModule.forRoot({ swaggerOptions: { docExpansion: "none" } })) // GET /docs
-  .use(users.middleware());
+const app = new Rhythm()
+  .use(mount(openapiModule.forRoot({ document: config }))) // GET /openapi.json
+  .use(mount(swaggerModule.forRoot({ swaggerOptions: { docExpansion: "none" } }))) // GET /docs
+  .use(mount(users));
 ```
 
-`swaggerModule.forRoot(options?)` answers `GET` on its `path` only (an exact match) and leaves every other request to
-the app. The page is built once when the module is created. Register it before any catch-all middleware.
+`swaggerModule.forRoot(options?)` is a module (a `Rhythm` app) that you add with `mount()`. It answers `GET` on its
+`path` only (an exact match) and leaves every other request to the app. The page is built once when the module is
+created. A mounted module hands over to the rest of the app afterwards, so a later catch-all should check the response
+(`ctx.response.body === null`) before writing its own.
 
 | Option           | Default         | Meaning                                                                                                                         |
 | ---------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -56,5 +58,5 @@ swaggerModule.forRoot({
 
 By default Swagger UI loads from unpkg at an exact pinned version with Subresource Integrity hashes, so a moved or
 compromised CDN file is refused by the browser. A custom `cdn` drops the built-in hashes, because they belong to the
-default files. The browser needs network access to render the page. Register `swaggerModule` next to
+default files. The browser needs network access to render the page. Mount `swaggerModule` next to
 [`@rhythmjs/scalar`](../scalar) with different `path` options to offer both UIs.

@@ -1,13 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { RhythmRouter } from "@rhythmjs/router";
 import { toFetchHandler } from "@rhythmjs/router/fetch";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
 import { z } from "zod";
 import { fragmentOf } from "../metadata/metadata";
 import { apiParam } from "./param";
 
-const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm<RhythmHttpContext>().use(router.middleware()));
+const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm().use(mount(router)));
 
 describe("apiParam", () => {
   const userParams = z.object({ id: z.coerce.number().int() });

@@ -1,5 +1,4 @@
-import { Rhythm } from "@rhythmjs/rhythm";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { scalarModule } from "@rhythmjs/scalar";
 import { swaggerModule } from "@rhythmjs/swagger";
 import { apiModule } from "./api.module";
@@ -10,11 +9,11 @@ const sources = [
   { url: "/api/platform/openapi.json", title: "Platform API" },
 ];
 
-export const appModule = new Rhythm<RhythmHttpContext>({ name: "app", type: "module" })
-  .register(apiModule)
-  .register(platformModule)
-  .register(scalarModule.forRoot({ path: "/docs", sources, pageTitle: "API Reference" }))
-  .register(swaggerModule.forRoot({ path: "/swagger", sources, pageTitle: "API Reference" }))
+export const appModule = new Rhythm({ name: "app" })
+  .use(mount(apiModule))
+  .use(mount(platformModule))
+  .use(mount(scalarModule.forRoot({ path: "/docs", sources, pageTitle: "API Reference" })))
+  .use(mount(swaggerModule.forRoot({ path: "/swagger", sources, pageTitle: "API Reference" })))
   .use((ctx) => {
-    ctx.json({ success: false, status: 404, message: "Not Found" }, 404);
+    if (ctx.response.body === null) ctx.json({ success: false, status: 404, message: "Not Found" }, 404);
   });

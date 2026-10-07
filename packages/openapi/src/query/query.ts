@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import type { DeriveMiddleware } from "@rhythmjs/rhythm/types";
+import type { ExtensionMiddleware } from "@rhythmjs/rhythm/types";
 import type { ParameterOverride } from "../metadata/metadata";
 import { collectQuery, schemaMiddleware, type Validated, type ValidationContext } from "../internal/runtime";
 
@@ -10,7 +10,7 @@ export interface ApiQueryOptions {
 export function apiQuery<TSchema extends StandardSchemaV1>(
   schema: TSchema,
   options: ApiQueryOptions = {},
-): DeriveMiddleware<ValidationContext, Validated<"query", TSchema>> {
+): ExtensionMiddleware<ValidationContext, Validated<"query", TSchema>> {
   return schemaMiddleware(
     "query",
     schema,

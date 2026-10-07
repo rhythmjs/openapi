@@ -5,7 +5,7 @@ one package, reference UIs in two others.
 
 - **[`packages/openapi`](./packages/openapi)**: `@rhythmjs/openapi`, single-purpose middlewares
   (`apiBody`, `apiResponse`, `apiTags`, …) that document and validate routes, a generator that turns the mounted
-  routers into an OpenAPI 3.1 document, and `openapiModule`, which serves it as JSON.
+  routers into an OpenAPI 3.1 document, and `openapiModule`, which serves it as JSON. Routers are made visible to the generator with `documented()`.
 - **[`packages/scalar`](./packages/scalar)**: `@rhythmjs/scalar`, the [Scalar](https://scalar.com) API reference page,
   pointed at any OpenAPI document URL.
 - **[`packages/swagger`](./packages/swagger)**: `@rhythmjs/swagger`, the

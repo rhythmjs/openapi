@@ -1,29 +1,29 @@
 import { describe, expect, test } from "bun:test";
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { RhythmRouter } from "@rhythmjs/router";
 import { toFetchHandler } from "@rhythmjs/router/fetch";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
 import { apiBody } from "../body/body";
 import { apiResponse } from "../response/response";
 import { apiTags } from "../tags/tags";
 import { defineDocument } from "../document/document";
+import { documented } from "../generate/generate";
 import { openapiModule } from "./module";
 
 const document = defineDocument({ info: { title: "Module API", version: "1.0.0" } });
 
-const hello = new RhythmRouter().get("/hello", apiResponse(200, { description: "Greets" }), (ctx) => {
+const hello = documented(new RhythmRouter()).get("/hello", apiResponse(200, { description: "Greets" }), (ctx) => {
   ctx.json({ hello: "world" });
 });
 
-const users = new RhythmRouter({ prefix: "/users" })
+const users = documented(new RhythmRouter())
   .use(apiTags("users"))
-  .get("/", apiResponse(200, { description: "Lists users" }), (ctx) => {
+  .get("/users", apiResponse(200, { description: "Lists users" }), (ctx) => {
     ctx.json([]);
   });
 
 const build = (...routers: RhythmRouter[]) => {
-  const app = new Rhythm<RhythmHttpContext>().register(openapiModule.forRoot({ document }));
-  for (const router of routers) app.use(router.middleware());
+  let app = new Rhythm().use(mount(openapiModule.forRoot({ document })));
+  for (const router of routers) app = app.use(mount(router));
   return toFetchHandler(app);
 };
 
@@ -50,11 +50,11 @@ describe("openapiModule", () => {
 
   test("documents only the app it is registered in, so sibling groups get separate documents", async () => {
     const group = (prefix: string, router: RhythmRouter) =>
-      new Rhythm<RhythmHttpContext>({ type: "module", name: prefix })
-        .register(openapiModule.forRoot({ document, path: `${prefix}/openapi.json` }))
-        .use(router.middleware());
+      new Rhythm({ name: prefix })
+        .use(mount(openapiModule.forRoot({ document, path: `${prefix}/openapi.json` })))
+        .use(mount(router));
     const handler = toFetchHandler(
-      new Rhythm<RhythmHttpContext>().register(group("/hello-group", hello)).register(group("/users", users)),
+      new Rhythm().use(mount(group("/hello-group", hello))).use(mount(group("/users", users))),
     );
 
     const paths = async (url: string) =>
@@ -62,15 +62,6 @@ describe("openapiModule", () => {
 
     expect(await paths("/hello-group/openapi.json")).toEqual(["/hello"]);
     expect(await paths("/users/openapi.json")).toEqual(["/users"]);
-  });
-
-  test("documents the app when added with use(module.middleware()) too", async () => {
-    const app = new Rhythm<RhythmHttpContext>()
-      .use(openapiModule.forRoot({ document }).middleware() as never)
-      .use(hello.middleware());
-
-    const body = (await (await get(toFetchHandler(app), "/openapi.json")).json()) as { paths: object };
-    expect(Object.keys(body.paths)).toEqual(["/hello"]);
   });
 
   test("fails with a clear error when the module was never added to an app", async () => {
@@ -84,11 +75,11 @@ describe("openapiModule", () => {
   });
 
   test("finds routers inside nested registered modules", async () => {
-    const feature = new Rhythm<RhythmHttpContext>({ type: "module", name: "feature" }).use(users.middleware());
-    const app = new Rhythm<RhythmHttpContext>()
-      .register(openapiModule.forRoot({ document }))
-      .register(feature)
-      .use(hello.middleware());
+    const feature = new Rhythm({ name: "feature" }).use(mount(users));
+    const app = new Rhythm()
+      .use(mount(openapiModule.forRoot({ document })))
+      .use(mount(feature))
+      .use(mount(hello));
 
     const doc = (await (await get(toFetchHandler(app), "/openapi.json")).json()) as { paths: Record<string, unknown> };
 
@@ -99,35 +90,36 @@ describe("openapiModule", () => {
     const handler = build(hello);
 
     expect(await (await get(handler, "/hello")).json()).toEqual({ hello: "world" });
-    expect(await (await handler(new Request("http://localhost/openapi.json", { method: "POST" }))).text()).toBe("");
-    expect(await (await get(handler, "/openapi.json/extra")).text()).toBe("");
-    expect(await (await get(handler, "/docs")).text()).toBe("");
+    expect(await (await handler(new Request("http://localhost/openapi.json", { method: "POST" }))).text()).toBe(
+      "Not Found",
+    );
+    expect(await (await get(handler, "/openapi.json/extra")).text()).toBe("Not Found");
+    expect(await (await get(handler, "/docs")).text()).toBe("Not Found");
   });
 
   test("path moves the document", async () => {
     const handler = toFetchHandler(
-      new Rhythm<RhythmHttpContext>()
-        .register(openapiModule.forRoot({ document, path: "/api/openapi.json" }))
-        .use(hello.middleware()),
+      new Rhythm().use(mount(openapiModule.forRoot({ document, path: "/api/openapi.json" }))).use(mount(hello)),
     );
 
     const doc = (await (await get(handler, "/api/openapi.json")).json()) as { paths: object };
 
     expect(Object.keys(doc.paths)).toEqual(["/hello"]);
-    expect(await (await get(handler, "/openapi.json")).text()).toBe("");
+    expect(await (await get(handler, "/openapi.json")).text()).toBe("Not Found");
   });
 
   test("rejects a path without a leading slash", () => {
     expect(() => openapiModule.forRoot({ document, path: "openapi.json" })).toThrow('must start with "/"');
   });
 
-  test("exposes openapiService to the rest of the app", async () => {
+  test("exposes openapiService on the module", async () => {
     let seen: unknown;
-    const app = new Rhythm<RhythmHttpContext>()
-      .register(openapiModule.forRoot({ document }), ({ openapiService }) => ({ openapiService }))
-      .use(hello.middleware())
-      .use(async (ctx) => {
-        seen = await ctx.openapiService.document();
+    const docs = openapiModule.forRoot({ document });
+    const app = new Rhythm()
+      .use(mount(docs))
+      .use(mount(hello))
+      .use(async () => {
+        seen = await docs.openapiService.document();
       });
 
     await toFetchHandler(app)(new Request("http://localhost/nope"));
@@ -152,7 +144,7 @@ describe("openapiModule", () => {
         },
       },
     } as never;
-    const router = new RhythmRouter().post("/flaky", apiBody(flaky), (ctx) => {
+    const router = documented(new RhythmRouter()).post("/flaky", apiBody(flaky), (ctx) => {
       ctx.json({ ok: true });
     });
     const handler = build(router);

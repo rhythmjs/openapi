@@ -1,4 +1,5 @@
-import { apiBody, type Validated } from "@rhythmjs/openapi/body";
+import { documented } from "@rhythmjs/openapi/generate";
+import { apiBody } from "@rhythmjs/openapi/body";
 import { apiOperation } from "@rhythmjs/openapi/operation";
 import { apiParam } from "@rhythmjs/openapi/param";
 import { apiResponse } from "@rhythmjs/openapi/response";
@@ -10,10 +11,10 @@ const User = z.object({ id: z.string(), name: z.string() });
 const CreateUser = z.object({ name: z.string().min(1) });
 const UserParams = z.object({ id: z.string() });
 
-export const apiController = new RhythmRouter({ prefix: "/api/v1/users" })
+export const apiController = documented(new RhythmRouter())
   .use(apiTags("users"))
   .get(
-    "/",
+    "/api/v1/users",
     apiOperation({ summary: "List users", operationId: "listUsers" }),
     apiResponse(200, { description: "All users", schema: z.array(User) }),
     (ctx) => {
@@ -21,7 +22,7 @@ export const apiController = new RhythmRouter({ prefix: "/api/v1/users" })
     },
   )
   .get(
-    "/:id",
+    "/api/v1/users/:id",
     apiParam(UserParams),
     apiOperation({ summary: "Get a user", operationId: "getUser" }),
     apiResponse(200, { description: "The user", schema: User }),
@@ -29,8 +30,8 @@ export const apiController = new RhythmRouter({ prefix: "/api/v1/users" })
       ctx.json({ id: ctx.params.id, name: "Ada" });
     },
   )
-  .post<Validated<"body", typeof CreateUser>>(
-    "/",
+  .post(
+    "/api/v1/users",
     apiBody(CreateUser),
     apiOperation({ summary: "Create a user", operationId: "createUser" }),
     apiResponse(201, { description: "Created", schema: User }),

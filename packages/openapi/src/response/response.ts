@@ -1,5 +1,5 @@
 import type { Middleware } from "@rhythmjs/rhythm/types";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import type { RhythmHttpContext } from "@rhythmjs/router/context";
 import type { ExampleObject, LinkObject, ReferenceObject } from "../types/types";
 import { docOnly, type HeaderSpec, type MediaTypeSpec, type ResponseSpec, type SchemaLike } from "../metadata/metadata";
 

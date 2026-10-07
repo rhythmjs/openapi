@@ -11,7 +11,7 @@ import { apiBearerAuth, apiNoSecurity } from "../security/security";
 import { apiExclude } from "../exclude/exclude";
 import { apiExtension } from "../extension/extension";
 import { defineDocument } from "../document/document";
-import { generate } from "./generate";
+import { documented, generate } from "./generate";
 import type { OpenAPIObject, OperationObject, ParameterObject } from "../types/types";
 
 const config = defineDocument({
@@ -34,10 +34,10 @@ describe("generate", () => {
     const user = z.object({ id: z.string(), name: z.string() });
     const createUser = z.object({ name: z.string().min(1) });
 
-    const router = new RhythmRouter({ prefix: "/api" })
+    const router = documented(documented(new RhythmRouter()))
       .use(apiTags("users"))
       .post(
-        "/users",
+        "/api/users",
         apiOperation({ summary: "Create user", operationId: "createUser" }),
         apiBearerAuth(),
         apiBody(createUser),
@@ -46,7 +46,7 @@ describe("generate", () => {
         ok,
       )
       .get(
-        "/users/:id",
+        "/api/users/:id",
         apiParam(z.object({ id: z.string() })),
         apiResponse(200, { description: "The user", schema: user }),
         ok,
@@ -76,7 +76,7 @@ describe("generate", () => {
   });
 
   test("router-level fragments apply only to routes registered after them", async () => {
-    const router = new RhythmRouter().get("/before", ok).use(apiTags("tagged")).get("/after", ok);
+    const router = documented(new RhythmRouter()).get("/before", ok).use(apiTags("tagged")).get("/after", ok);
 
     const doc = await generate(router, config, { includeUndocumented: true });
 
@@ -85,7 +85,7 @@ describe("generate", () => {
   });
 
   test("expands query parameters with requiredness and overrides", async () => {
-    const router = new RhythmRouter().get(
+    const router = documented(new RhythmRouter()).get(
       "/search",
       apiQuery(z.object({ q: z.string(), limit: z.coerce.number().optional() }), {
         overrides: { q: { description: "Search text" }, limit: { deprecated: true } },
@@ -102,7 +102,7 @@ describe("generate", () => {
   });
 
   test("undocumented routes get a default response, and can be dropped via includeUndocumented", async () => {
-    const router = new RhythmRouter().get("/health", ok);
+    const router = documented(new RhythmRouter()).get("/health", ok);
 
     const doc = await generate(router, config, { includeUndocumented: true });
     expect(op(doc, "/health", "get").responses).toEqual({
@@ -115,7 +115,7 @@ describe("generate", () => {
   });
 
   test("apiExclude removes a route; router-level apiExclude removes the routes after it", async () => {
-    const router = new RhythmRouter()
+    const router = documented(new RhythmRouter())
       .get("/public", ok)
       .get("/internal", apiExclude(), ok)
       .use(apiExclude())
@@ -127,7 +127,10 @@ describe("generate", () => {
   });
 
   test("apiNoSecurity overrides inherited security with an empty requirement", async () => {
-    const router = new RhythmRouter().use(apiBearerAuth()).get("/private", ok).get("/login", apiNoSecurity(), ok);
+    const router = documented(new RhythmRouter())
+      .use(apiBearerAuth())
+      .get("/private", ok)
+      .get("/login", apiNoSecurity(), ok);
 
     const doc = await generate(router, config, { includeUndocumented: true });
 
@@ -136,7 +139,10 @@ describe("generate", () => {
   });
 
   test("route-level security re-adds requirements after an inherited apiNoSecurity", async () => {
-    const router = new RhythmRouter().use(apiNoSecurity()).get("/open", ok).get("/locked", apiBearerAuth(), ok);
+    const router = documented(new RhythmRouter())
+      .use(apiNoSecurity())
+      .get("/open", ok)
+      .get("/locked", apiBearerAuth(), ok);
 
     const doc = await generate(router, config, { includeUndocumented: true });
 
@@ -145,7 +151,7 @@ describe("generate", () => {
   });
 
   test("operation extensions land on the operation object", async () => {
-    const router = new RhythmRouter().get("/x", apiExtension("x-internal", true), ok);
+    const router = documented(new RhythmRouter()).get("/x", apiExtension("x-internal", true), ok);
 
     const doc = await generate(router, config, { includeUndocumented: true });
 
@@ -153,7 +159,7 @@ describe("generate", () => {
   });
 
   test("hoists $defs from raw JSON Schemas into components.schemas and rewrites refs", async () => {
-    const router = new RhythmRouter().get(
+    const router = documented(new RhythmRouter()).get(
       "/user",
       apiResponse(200, {
         description: "A user",
@@ -177,7 +183,7 @@ describe("generate", () => {
 
   test("request and response sides of a transforming schema document differently", async () => {
     const Count = z.object({ count: z.string().transform(Number).pipe(z.number()) });
-    const router = new RhythmRouter().post(
+    const router = documented(new RhythmRouter()).post(
       "/count",
       apiBody(Count),
       apiResponse(200, { description: "Counted", schema: Count }),
@@ -198,7 +204,7 @@ describe("generate", () => {
   });
 
   test("wildcard segments become a {wildcard} template parameter path", async () => {
-    const router = new RhythmRouter().get("/files/*", ok);
+    const router = documented(new RhythmRouter()).get("/files/*", ok);
 
     const doc = await generate(router, config, { includeUndocumented: true });
 
@@ -225,7 +231,7 @@ describe("generate", () => {
       extensions: { "x-audience": "internal" },
     });
 
-    const doc = await generate(new RhythmRouter(), full);
+    const doc = await generate(documented(new RhythmRouter()), full);
 
     expect(doc.jsonSchemaDialect).toBe("https://json-schema.org/draft/2020-12/schema");
     expect(doc.servers?.[0]?.variables?.region?.default).toBe("eu");

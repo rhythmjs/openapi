@@ -1,7 +1,6 @@
 import { defineDocument } from "@rhythmjs/openapi/document";
 import { openapiModule } from "@rhythmjs/openapi/module";
-import { Rhythm } from "@rhythmjs/rhythm";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { apiController } from "./api.controller";
 
 const document = defineDocument({
@@ -9,6 +8,6 @@ const document = defineDocument({
   servers: [{ url: "/api/v1" }],
 });
 
-export const apiModule = new Rhythm<RhythmHttpContext>({ name: "api", type: "module" })
-  .register(openapiModule.forRoot({ document, path: "/api/v1/openapi.json" }))
-  .use(apiController.middleware());
+export const apiModule = new Rhythm({ name: "api" })
+  .use(mount(openapiModule.forRoot({ document, path: "/api/v1/openapi.json" })))
+  .use(mount(apiController));

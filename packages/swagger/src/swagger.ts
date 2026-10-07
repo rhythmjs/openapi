@@ -1,6 +1,4 @@
-import { mount } from "@rhythmjs/http/mount";
-import { Rhythm } from "@rhythmjs/rhythm";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import { RhythmRouter } from "@rhythmjs/router";
 
 export interface SwaggerSource {
   url: string;
@@ -90,14 +88,8 @@ export const swaggerModule = {
       nonce,
       swaggerOptions,
     );
-    return new Rhythm<RhythmHttpContext>({ type: "module", name: "swagger" }).use(
-      mount(path, async (ctx, next) => {
-        if (ctx.request.method !== "GET") {
-          await next();
-          return;
-        }
-        ctx.html(page);
-      }),
-    );
+    return new RhythmRouter({ name: "swagger" }).get(path, (ctx) => {
+      ctx.html(page);
+    });
   },
 };

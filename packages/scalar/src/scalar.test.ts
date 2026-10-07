@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { Rhythm } from "@rhythmjs/rhythm";
+import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { toFetchHandler } from "@rhythmjs/router/fetch";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
 import { scalarModule, type ScalarOptions } from "./scalar";
 
 const app = (options?: ScalarOptions) =>
   toFetchHandler(
-    new Rhythm<RhythmHttpContext>()
-      .register(scalarModule.forRoot(options))
-      .use((ctx) => ctx.json({ fellThrough: true })),
+    new Rhythm().use(mount(scalarModule.forRoot(options))).use((ctx) => {
+      // a mounted module hands over to the rest of the app after it runs, so only answer if it did not
+      if (ctx.response.body === null) ctx.json({ fellThrough: true });
+    }),
   );
 
 const get = (handler: ReturnType<typeof app>, path: string, method = "GET") =>

@@ -1,5 +1,5 @@
 import type { Middleware } from "@rhythmjs/rhythm/types";
-import type { RhythmHttpContext } from "@rhythmjs/router/adapters/context";
+import type { RhythmHttpContext } from "@rhythmjs/router/context";
 import { docOnly } from "../metadata/metadata";
 
 export function apiSecurity(name: string, scopes: string[] = []): Middleware<RhythmHttpContext> {
