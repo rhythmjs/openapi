@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/openapi",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "OpenAPI 3.1 documentation middleware (request/response schemas, operations, security) and spec endpoint for Rhythm routers and handlers.",
   "keywords": [
     "documentation",
@@ -101,6 +101,8 @@
     "access": "public"
   },
   "scripts": {
+    "clean": "rm -rf dist",
+    "prebuild": "bun run clean",
     "build": "bun build src/types/types.ts src/metadata/metadata.ts src/resolver/resolver.ts src/body/body.ts src/query/query.ts src/param/param.ts src/header/header.ts src/cookie/cookie.ts src/operation/operation.ts src/response/response.ts src/tags/tags.ts src/security/security.ts src/exclude/exclude.ts src/extension/extension.ts src/callback/callback.ts src/document/document.ts src/generate/generate.ts src/module/module.ts --outdir dist --root src --format esm --target bun --packages external --splitting && tsc -p tsconfig.build.json",
     "prepublishOnly": "bun run typecheck && bun test && bun run build",
     "typecheck": "tsc --noEmit",
@@ -110,8 +112,8 @@
     "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
-    "@rhythmjs/rhythm": "^0.0.20",
-    "@rhythmjs/router": "^0.0.20",
+    "@rhythmjs/rhythm": "^0.0.21",
+    "@rhythmjs/router": "^0.0.21",
     "zod": "^4.6.5"
   },
   "peerDependencies": {

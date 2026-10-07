@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/scalar",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Scalar API reference page for Rhythm on Bun: serves the Scalar UI (via @scalar/client-side-rendering), pointed at any OpenAPI document URL.",
   "keywords": [
     "api-reference",
@@ -31,14 +31,16 @@
     "access": "public"
   },
   "scripts": {
+    "clean": "rm -rf dist",
+    "prebuild": "bun run clean",
     "build": "bun build src/scalar.ts --outdir dist --root src --format esm --target bun --packages external && tsc -p tsconfig.build.json",
     "prepublishOnly": "bun run typecheck && bun test && bun run build",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
   "devDependencies": {
-    "@rhythmjs/rhythm": "^0.0.20",
-    "@rhythmjs/router": "^0.0.20"
+    "@rhythmjs/rhythm": "^0.0.21",
+    "@rhythmjs/router": "^0.0.21"
   },
   "peerDependencies": {
     "@rhythmjs/rhythm": ">=0.0.18",
