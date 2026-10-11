@@ -10,7 +10,7 @@ The [Scalar](https://scalar.com) API reference page for [Rhythm](https://github.
 bun add @rhythmjs/scalar @rhythmjs/rhythm @rhythmjs/router
 ```
 
-Requires `@rhythmjs/rhythm` and `@rhythmjs/router` >= 0.0.18 and Bun >= 1.2. To generate the document, also install
+Requires `@rhythmjs/rhythm` and `@rhythmjs/router` >= 0.0.24 and Bun >= 1.2. To generate the document, also install
 [`@rhythmjs/openapi`](../openapi).
 
 ## Walkthrough
@@ -24,12 +24,13 @@ import { documented } from "@rhythmjs/openapi/generate";
 import { openapiModule } from "@rhythmjs/openapi/module";
 import { apiResponse } from "@rhythmjs/openapi/response";
 import { scalarModule } from "@rhythmjs/scalar";
+import { text } from "@rhythmjs/router/response";
 
 const hello = documented(new RhythmRouter()).get(
   "/hello",
   apiResponse(200, { description: "A greeting", contentType: "text/plain", schema: { type: "string" } }),
   (ctx) => {
-    ctx.text("Hello World!");
+    text(ctx, "Hello World!");
   },
 );
 

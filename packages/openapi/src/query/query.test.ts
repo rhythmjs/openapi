@@ -5,6 +5,7 @@ import { toFetchHandler } from "@rhythmjs/router/fetch";
 import { z } from "zod";
 import { fragmentOf } from "../metadata/metadata";
 import { apiQuery } from "./query";
+import { json } from "@rhythmjs/router/response";
 
 const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm().use(mount(router)));
 
@@ -14,7 +15,7 @@ describe("apiQuery", () => {
   const app = () =>
     serve(
       new RhythmRouter().get("/search", apiQuery(listQuery), (ctx) => {
-        ctx.json(ctx.valid.query);
+        json(ctx, ctx.valid.query);
       }),
     );
 
@@ -35,7 +36,7 @@ describe("apiQuery", () => {
 
   test("collects repeated keys into arrays", async () => {
     const router = new RhythmRouter().get("/tags", apiQuery(z.object({ tag: z.array(z.string()) })), (ctx) => {
-      ctx.json(ctx.valid.query);
+      json(ctx, ctx.valid.query);
     });
 
     const res = await serve(router)(new Request("http://localhost/tags?tag=a&tag=b"));

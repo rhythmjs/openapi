@@ -5,6 +5,7 @@ import { toFetchHandler } from "@rhythmjs/router/fetch";
 import { z } from "zod";
 import { fragmentOf } from "../metadata/metadata";
 import { apiParam } from "./param";
+import { json } from "@rhythmjs/router/response";
 
 const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm().use(mount(router)));
 
@@ -14,7 +15,7 @@ describe("apiParam", () => {
   const app = () =>
     serve(
       new RhythmRouter().get("/users/:id", apiParam(userParams), (ctx) => {
-        ctx.json(ctx.valid.param);
+        json(ctx, ctx.valid.param);
       }),
     );
 

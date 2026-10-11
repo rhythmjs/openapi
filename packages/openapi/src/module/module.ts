@@ -3,6 +3,7 @@ import { RhythmRouter } from "@rhythmjs/router";
 import type { OpenAPIObject } from "../types/types";
 import type { OpenAPIConfig } from "../document/document";
 import { generate, isRouterSource, type GenerateOptions, type RouterSource } from "../generate/generate";
+import { json } from "@rhythmjs/router/response";
 
 export interface OpenapiOptions extends GenerateOptions {
   document: OpenAPIConfig;
@@ -51,7 +52,7 @@ export const openapiModule = {
     };
 
     const module = new RhythmRouter({ name: "openapi" }).get(path, async (ctx) => {
-      ctx.json(await openapiService.document());
+      json(ctx, await openapiService.document());
     });
     return Object.assign(module, { openapiService });
   },

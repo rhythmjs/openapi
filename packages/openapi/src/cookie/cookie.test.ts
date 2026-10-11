@@ -5,6 +5,7 @@ import { toFetchHandler } from "@rhythmjs/router/fetch";
 import { z } from "zod";
 import { fragmentOf } from "../metadata/metadata";
 import { apiCookie } from "./cookie";
+import { json } from "@rhythmjs/router/response";
 
 const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm().use(mount(router)));
 
@@ -14,7 +15,7 @@ describe("apiCookie", () => {
   const app = () =>
     serve(
       new RhythmRouter().get("/me", apiCookie(sessionCookies), (ctx) => {
-        ctx.json(ctx.valid.cookie);
+        json(ctx, ctx.valid.cookie);
       }),
     );
 
@@ -27,7 +28,7 @@ describe("apiCookie", () => {
 
   test("decodes URI-encoded cookie values", async () => {
     const router = new RhythmRouter().get("/echo", apiCookie(z.object({ name: z.string() })), (ctx) => {
-      ctx.json(ctx.valid.cookie);
+      json(ctx, ctx.valid.cookie);
     });
 
     const res = await serve(router)(

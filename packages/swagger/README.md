@@ -25,12 +25,13 @@ import { documented } from "@rhythmjs/openapi/generate";
 import { openapiModule } from "@rhythmjs/openapi/module";
 import { apiResponse } from "@rhythmjs/openapi/response";
 import { swaggerModule } from "@rhythmjs/swagger";
+import { text } from "@rhythmjs/router/response";
 
 const hello = documented(new RhythmRouter()).get(
   "/hello",
   apiResponse(200, { description: "A greeting", contentType: "text/plain", schema: { type: "string" } }),
   (ctx) => {
-    ctx.text("Hello World!");
+    text(ctx, "Hello World!");
   },
 );
 

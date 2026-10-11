@@ -9,6 +9,7 @@ import { apiTags } from "@rhythmjs/openapi/tags";
 import { RhythmRouter } from "@rhythmjs/router";
 import { z } from "zod";
 import type { appService } from "./app.service";
+import { json, text } from "@rhythmjs/router/response";
 
 export type AppContext = {
   appService: typeof appService;
@@ -30,7 +31,7 @@ export const appController = documented(new RhythmRouter<AppContext>())
     apiOperation({ summary: "Say hello", operationId: "getHello" }),
     apiResponse(200, { description: "A greeting", content: { "text/plain": { schema: { type: "string" } } } }),
     (ctx) => {
-      ctx.text(ctx.appService.getHello());
+      text(ctx, ctx.appService.getHello());
     },
   )
   .get(
@@ -39,7 +40,7 @@ export const appController = documented(new RhythmRouter<AppContext>())
     apiOperation({ summary: "Greet by query string", operationId: "greetByQuery" }),
     apiResponse(200, { description: "A greeting", schema: Greeting }),
     (ctx) => {
-      ctx.json({ message: ctx.appService.greet(ctx.valid.query.name) });
+      json(ctx, { message: ctx.appService.greet(ctx.valid.query.name) });
     },
   )
   .get(
@@ -48,7 +49,7 @@ export const appController = documented(new RhythmRouter<AppContext>())
     apiOperation({ summary: "Greet by path parameter", operationId: "greetByParam" }),
     apiResponse(200, { description: "A greeting", schema: Greeting }),
     (ctx) => {
-      ctx.json({ message: ctx.appService.greet(ctx.params.name) });
+      json(ctx, { message: ctx.appService.greet(ctx.params.name) });
     },
   )
 
@@ -62,6 +63,6 @@ export const appController = documented(new RhythmRouter<AppContext>())
     apiResponse(401, { description: "Missing or invalid bearer token" }),
     (ctx) => {
       const { name, message } = ctx.valid.body;
-      ctx.json({ message: `${message}, ${name}!` }, 201);
+      json(ctx, { message: `${message}, ${name}!` }, 201);
     },
   );

@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/openapi",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "OpenAPI 3.1 documentation middleware (request/response schemas, operations, security) and spec endpoint for Rhythm routers and handlers.",
   "keywords": [
     "documentation",
@@ -112,13 +112,13 @@
     "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
-    "@rhythmjs/rhythm": "^0.0.21",
-    "@rhythmjs/router": "^0.0.21",
+    "@rhythmjs/rhythm": "^0.0.24",
+    "@rhythmjs/router": "^0.0.24",
     "zod": "^4.6.5"
   },
   "peerDependencies": {
-    "@rhythmjs/rhythm": ">=0.0.18",
-    "@rhythmjs/router": ">=0.0.18",
+    "@rhythmjs/rhythm": ">=0.0.24",
+    "@rhythmjs/router": ">=0.0.24",
     "zod": "*"
   },
   "peerDependenciesMeta": {

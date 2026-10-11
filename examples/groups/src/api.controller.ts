@@ -6,6 +6,7 @@ import { apiResponse } from "@rhythmjs/openapi/response";
 import { apiTags } from "@rhythmjs/openapi/tags";
 import { RhythmRouter } from "@rhythmjs/router";
 import { z } from "zod";
+import { json } from "@rhythmjs/router/response";
 
 const User = z.object({ id: z.string(), name: z.string() });
 const CreateUser = z.object({ name: z.string().min(1) });
@@ -18,7 +19,7 @@ export const apiController = documented(new RhythmRouter())
     apiOperation({ summary: "List users", operationId: "listUsers" }),
     apiResponse(200, { description: "All users", schema: z.array(User) }),
     (ctx) => {
-      ctx.json([{ id: "1", name: "Ada" }]);
+      json(ctx, [{ id: "1", name: "Ada" }]);
     },
   )
   .get(
@@ -27,7 +28,7 @@ export const apiController = documented(new RhythmRouter())
     apiOperation({ summary: "Get a user", operationId: "getUser" }),
     apiResponse(200, { description: "The user", schema: User }),
     (ctx) => {
-      ctx.json({ id: ctx.params.id, name: "Ada" });
+      json(ctx, { id: ctx.params.id, name: "Ada" });
     },
   )
   .post(
@@ -36,6 +37,6 @@ export const apiController = documented(new RhythmRouter())
     apiOperation({ summary: "Create a user", operationId: "createUser" }),
     apiResponse(201, { description: "Created", schema: User }),
     (ctx) => {
-      ctx.json({ id: "2", ...ctx.valid.body }, 201);
+      json(ctx, { id: "2", ...ctx.valid.body }, 201);
     },
   );

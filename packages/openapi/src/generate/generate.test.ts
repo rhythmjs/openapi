@@ -13,14 +13,16 @@ import { apiExtension } from "../extension/extension";
 import { defineDocument } from "../document/document";
 import { documented, generate } from "./generate";
 import type { OpenAPIObject, OperationObject, ParameterObject } from "../types/types";
+import type { RhythmHttpContext } from "@rhythmjs/router/context";
+import { json } from "@rhythmjs/router/response";
 
 const config = defineDocument({
   info: { title: "Test API", version: "1.0.0" },
   securitySchemes: { bearer: { type: "http", scheme: "bearer" } },
 });
 
-const ok = (ctx: { json(data: unknown): void }): void => {
-  ctx.json({ ok: true });
+const ok = (ctx: RhythmHttpContext): void => {
+  json(ctx, { ok: true });
 };
 
 const op = (doc: OpenAPIObject, path: string, method: "get" | "post"): OperationObject => {

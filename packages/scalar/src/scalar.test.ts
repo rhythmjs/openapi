@@ -2,12 +2,13 @@ import { describe, expect, test } from "bun:test";
 import { Rhythm, mount } from "@rhythmjs/rhythm";
 import { toFetchHandler } from "@rhythmjs/router/fetch";
 import { scalarModule, type ScalarOptions } from "./scalar";
+import { json } from "@rhythmjs/router/response";
 
 const app = (options?: ScalarOptions) =>
   toFetchHandler(
     new Rhythm().use(mount(scalarModule.forRoot(options))).use((ctx) => {
       // a mounted module hands over to the rest of the app after it runs, so only answer if it did not
-      if (ctx.response.body === null) ctx.json({ fellThrough: true });
+      if (ctx.response.body === null) json(ctx, { fellThrough: true });
     }),
   );
 

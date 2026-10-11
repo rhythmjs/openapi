@@ -5,6 +5,7 @@ import { toFetchHandler } from "@rhythmjs/router/fetch";
 import { z } from "zod";
 import { fragmentOf } from "../metadata/metadata";
 import { apiHeader } from "./header";
+import { json } from "@rhythmjs/router/response";
 
 const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm().use(mount(router)));
 
@@ -14,7 +15,7 @@ describe("apiHeader", () => {
   const app = () =>
     serve(
       new RhythmRouter().get("/ping", apiHeader(requestHeaders), (ctx) => {
-        ctx.json(ctx.valid.header);
+        json(ctx, ctx.valid.header);
       }),
     );
 

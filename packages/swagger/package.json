@@ -1,6 +1,6 @@
 {
   "name": "@rhythmjs/swagger",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Swagger UI page for Rhythm on Bun: serves Swagger UI from a CDN, pointed at any OpenAPI document URL.",
   "keywords": [
     "api-reference",
@@ -40,12 +40,12 @@
     "test": "bun test"
   },
   "devDependencies": {
-    "@rhythmjs/rhythm": "^0.0.21",
-    "@rhythmjs/router": "^0.0.21"
+    "@rhythmjs/rhythm": "^0.0.24",
+    "@rhythmjs/router": "^0.0.24"
   },
   "peerDependencies": {
-    "@rhythmjs/rhythm": ">=0.0.18",
-    "@rhythmjs/router": ">=0.0.18"
+    "@rhythmjs/rhythm": ">=0.0.24",
+    "@rhythmjs/router": ">=0.0.24"
   },
   "engines": {
     "bun": ">=1.2.0"

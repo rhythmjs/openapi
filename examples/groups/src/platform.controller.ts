@@ -6,6 +6,7 @@ import { apiBearerAuth, apiNoSecurity } from "@rhythmjs/openapi/security";
 import { apiTags } from "@rhythmjs/openapi/tags";
 import { RhythmRouter } from "@rhythmjs/router";
 import { z } from "zod";
+import { json } from "@rhythmjs/router/response";
 
 const Tenant = z.object({ id: z.string(), name: z.string() });
 const CreateTenant = z.object({ name: z.string().min(1) });
@@ -18,7 +19,7 @@ export const platformController = documented(new RhythmRouter())
     apiOperation({ summary: "Liveness probe", operationId: "getHealth" }),
     apiResponse(200, { description: "The platform is up", schema: z.object({ status: z.literal("ok") }) }),
     (ctx) => {
-      ctx.json({ status: "ok" });
+      json(ctx, { status: "ok" });
     },
   )
   .use(apiBearerAuth())
@@ -28,7 +29,7 @@ export const platformController = documented(new RhythmRouter())
     apiResponse(200, { description: "All tenants", schema: z.array(Tenant) }),
     apiResponse(401, { description: "Missing or invalid bearer token" }),
     (ctx) => {
-      ctx.json([{ id: "t1", name: "Acme" }]);
+      json(ctx, [{ id: "t1", name: "Acme" }]);
     },
   )
   .post(
@@ -38,6 +39,6 @@ export const platformController = documented(new RhythmRouter())
     apiResponse(201, { description: "Created", schema: Tenant }),
     apiResponse(401, { description: "Missing or invalid bearer token" }),
     (ctx) => {
-      ctx.json({ id: "t2", ...ctx.valid.body }, 201);
+      json(ctx, { id: "t2", ...ctx.valid.body }, 201);
     },
   );

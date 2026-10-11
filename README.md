@@ -27,6 +27,7 @@ import { openapiModule } from "@rhythmjs/openapi/module";
 import { scalarModule } from "@rhythmjs/scalar";
 import { swaggerModule } from "@rhythmjs/swagger";
 import { z } from "zod";
+import { json } from "@rhythmjs/router/response";
 
 const User = z.object({ id: z.string(), name: z.string() });
 const CreateUser = z.object({ name: z.string().min(1) });
@@ -35,7 +36,7 @@ const CreateUser = z.object({ name: z.string().min(1) });
 const usersRouter = documented(new RhythmRouter())
   .use(apiTags("users"))
   .post("/users", apiBody(CreateUser), apiResponse(201, { description: "Created", schema: User }), (ctx) => {
-    ctx.json({ id: "1", ...ctx.valid.body }, 201);
+    json(ctx, { id: "1", ...ctx.valid.body }, 201);
   });
 
 const document = defineDocument({

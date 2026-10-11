@@ -1,4 +1,5 @@
 import { RhythmRouter } from "@rhythmjs/router";
+import { html } from "@rhythmjs/router/response";
 
 export interface SwaggerSource {
   url: string;
@@ -89,7 +90,7 @@ export const swaggerModule = {
       swaggerOptions,
     );
     return new RhythmRouter({ name: "swagger" }).get(path, (ctx) => {
-      ctx.html(page);
+      html(ctx, page);
     });
   },
 };

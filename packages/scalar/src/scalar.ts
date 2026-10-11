@@ -1,5 +1,6 @@
 import { renderApiReference, type HtmlRenderingConfiguration } from "@scalar/client-side-rendering";
 import { RhythmRouter } from "@rhythmjs/router";
+import { html } from "@rhythmjs/router/response";
 
 export type ScalarOptions = Partial<HtmlRenderingConfiguration> & { path?: string };
 
@@ -17,7 +18,7 @@ export const scalarModule = {
       bundle,
     });
     return new RhythmRouter({ name: "scalar" }).get(path, (ctx) => {
-      ctx.html(page);
+      html(ctx, page);
     });
   },
 };

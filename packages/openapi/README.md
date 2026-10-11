@@ -35,6 +35,7 @@ import { defineDocument } from "@rhythmjs/openapi/document";
 import { documented } from "@rhythmjs/openapi/generate";
 import { openapiModule } from "@rhythmjs/openapi/module";
 import { z } from "zod";
+import { json } from "@rhythmjs/router/response";
 
 const User = z.object({ id: z.string(), name: z.string() });
 const CreateUser = z.object({ name: z.string().min(1) });
@@ -49,7 +50,7 @@ const usersRouter = documented(new RhythmRouter())
     apiResponse(201, { description: "Created", schema: User }),
     (ctx) => {
       // ctx.valid.body is typed from the schema output: { name: string }
-      ctx.json({ id: "1", ...ctx.valid.body }, 201);
+      json(ctx, { id: "1", ...ctx.valid.body }, 201);
     },
   )
   .get(
@@ -57,7 +58,7 @@ const usersRouter = documented(new RhythmRouter())
     apiParam(z.object({ id: z.string() })),
     apiResponse(200, { description: "The user", schema: User }),
     (ctx) => {
-      ctx.json({ id: ctx.params.id, name: "Ada" });
+      json(ctx, { id: ctx.params.id, name: "Ada" });
     },
   );
 

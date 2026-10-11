@@ -8,17 +8,18 @@ import { apiTags } from "../tags/tags";
 import { defineDocument } from "../document/document";
 import { documented } from "../generate/generate";
 import { openapiModule } from "./module";
+import { json } from "@rhythmjs/router/response";
 
 const document = defineDocument({ info: { title: "Module API", version: "1.0.0" } });
 
 const hello = documented(new RhythmRouter()).get("/hello", apiResponse(200, { description: "Greets" }), (ctx) => {
-  ctx.json({ hello: "world" });
+  json(ctx, { hello: "world" });
 });
 
 const users = documented(new RhythmRouter())
   .use(apiTags("users"))
   .get("/users", apiResponse(200, { description: "Lists users" }), (ctx) => {
-    ctx.json([]);
+    json(ctx, []);
   });
 
 const build = (...routers: RhythmRouter[]) => {
@@ -27,8 +28,8 @@ const build = (...routers: RhythmRouter[]) => {
   return toFetchHandler(app);
 };
 
-const get = (handler: (request: Request) => Promise<Response>, path: string) =>
-  handler(new Request(`http://localhost${path}`));
+const get = (handler: (request: Request) => Response | Promise<Response>, path: string) =>
+  Promise.resolve(handler(new Request(`http://localhost${path}`)));
 
 describe("openapiModule", () => {
   test("serves a document built from the routers mounted anywhere in the app", async () => {
@@ -65,8 +66,8 @@ describe("openapiModule", () => {
   });
 
   test("fails with a clear error when the module was never added to an app", async () => {
-    const failure = await toFetchHandler(openapiModule.forRoot({ document }))(
-      new Request("http://localhost/openapi.json"),
+    const failure = await Promise.resolve(
+      toFetchHandler(openapiModule.forRoot({ document }))(new Request("http://localhost/openapi.json")),
     ).catch((error: Error) => error);
 
     expect(((failure as Error).cause ?? failure) as Error).toMatchObject({
@@ -145,7 +146,7 @@ describe("openapiModule", () => {
       },
     } as never;
     const router = documented(new RhythmRouter()).post("/flaky", apiBody(flaky), (ctx) => {
-      ctx.json({ ok: true });
+      json(ctx, { ok: true });
     });
     const handler = build(router);
 

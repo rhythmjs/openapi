@@ -5,6 +5,7 @@ import { toFetchHandler } from "@rhythmjs/router/fetch";
 import { z } from "zod";
 import { fragmentOf } from "../metadata/metadata";
 import { apiBody, type ValidationFailure } from "./body";
+import { json } from "@rhythmjs/router/response";
 
 const serve = (router: RhythmRouter) => toFetchHandler(new Rhythm().use(mount(router)));
 
@@ -17,7 +18,7 @@ describe("apiBody", () => {
   const app = () =>
     serve(
       new RhythmRouter().post("/users", apiBody(createUser), (ctx) => {
-        ctx.json(ctx.valid.body);
+        json(ctx, ctx.valid.body);
       }),
     );
 
@@ -51,7 +52,7 @@ describe("apiBody", () => {
       "/login",
       apiBody(z.object({ user: z.string() }), { contentType: "application/x-www-form-urlencoded" }),
       (ctx) => {
-        ctx.json(ctx.valid.body);
+        json(ctx, ctx.valid.body);
       },
     );
 
@@ -72,7 +73,7 @@ describe("apiBody", () => {
       apiBody(z.object({ user: z.string(), avatar: z.instanceof(File) }), { contentType: "multipart/form-data" }),
       async (ctx) => {
         const { user, avatar } = ctx.valid.body;
-        ctx.json({ user, name: avatar.name, type: avatar.type, content: await avatar.text() });
+        json(ctx, { user, name: avatar.name, type: avatar.type, content: await avatar.text() });
       },
     );
 
@@ -92,7 +93,7 @@ describe("apiBody", () => {
       apiBody(z.object({ file: z.instanceof(File) }), { contentType: "multipart/form-data" }),
       async (ctx) => {
         const bytes = new Uint8Array(await ctx.valid.body.file.arrayBuffer());
-        ctx.json({ bytes: [...bytes] });
+        json(ctx, { bytes: [...bytes] });
       },
     );
 
@@ -110,7 +111,7 @@ describe("apiBody", () => {
       "/upload",
       apiBody(z.object({ user: z.string() }), { contentType: "multipart/form-data" }),
       (ctx) => {
-        ctx.json(ctx.valid.body);
+        json(ctx, ctx.valid.body);
       },
     );
 
